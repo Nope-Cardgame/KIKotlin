@@ -1,23 +1,27 @@
-# Nope - KI Spieler (_<programmier_sprache>_)
+# Nope - KI Spieler Kotlin
 
-Kurze Beschreibung des Repos und der übergriefenden Schnittstelle für die unterschiedlichen Clients.
+Repository für die Kotlin Clients und deren Schnittstellen.
 
 
 ## Dokumentation
-[Link zum Doku-Ordner](https://github.com/Nope-Cardgame/Repo-Template/Doku-Ordner)
+[Dokumentation noch ausstehend]()
 
 
 ## Mitglieder
 Mitglied | entwickelter Client | 
 --- | --- |
-[GitHub-Benutzername1](https://github.com/GitHub-Benutzername1) | Client1
-[GitHub-Benutzername2](https://github.com/GitHub-Benutzername2) | Client2
-[GitHub-Benutzername3](https://github.com/GitHub-Benutzername3) | Client3
+[Jonas Pollpeter](https://github.com/JonasPTFL) | Client1
+[Tim Schlüter](https://github.com/TosSystems) | Client2 (Android App)
+[Jan Rasche](https://github.com/Muquinbla) | Client3
 
 
 ## Installation
 
-Erklärung wie das Projekt ausgeführt wird
+### Versionen
+- Kotlin 1.8.0
+- JDK 1.8
+
+### Erklärung wie das Projekt ausgeführt wird
 
 1. Installation von benötigten Softwarepakete
 2. Klonen des GitHub-Repo
