@@ -1,0 +1,36 @@
+name: "📋 Task"
+description: Create a new Task.
+title: "📋 [TASK] - <title>"
+labels: [
+  "task"
+]
+body:
+  - type: textarea
+    id: imagination
+    attributes:
+      label: "💭 Vorstellung/Wunsch"
+      description: Please enter an explicit description of your task
+      placeholder: Short and explicit description...
+    validations:
+      required: true
+  - type: textarea
+    id: use
+    attributes:
+      label: "📈 Nutzen"
+      description: Please enter an explicit description of the use
+      placeholder: |
+        - perfect for ...
+        - needed to ...
+        - important for ...
+    validations:
+      required: true
+  - type: textarea
+    id: dependency
+    attributes:
+      label: "🔗 Abhängigkeit"
+      description: If any other Tasks needs to be done before this is worked on
+      value: |
+        - parallel to #...
+        - work after #... is done
+    validations:
+      required: false
