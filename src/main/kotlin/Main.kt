@@ -16,51 +16,55 @@ fun main() {
 //            val loginResult = restApi.signUp(username, password) // already signed up
             val loginResult = restApi.signIn(username, password)
             println("JSON web token: ${loginResult.jsonWebToken}")
-        }
-    }
 
 
-    val socket = Socket(
-        endpoint = "",
-        config = SocketOptions(
-            queryParams = mapOf("token" to "MySuperToken"),
-            transport = SocketOptions.Transport.WEBSOCKET
-        )
-    ) {
-        on(SocketEvent.Connect) {
-            println("connect")
-        }
 
-        on(SocketEvent.Connecting) {
-            println("connecting")
-        }
+            // JsonWebToken muss als Auth header mitgesendet werden, wie kann das hier gemacht werden?
+            val socket = Socket(
+                endpoint = "http://nope.ddns.net/",
+                config = SocketOptions(
+                    queryParams = mapOf(),
+                    transport = SocketOptions.Transport.WEBSOCKET
+                )
+            ) {
+                on(SocketEvent.Connect) {
+                    println("connect")
+                }
 
-        on(SocketEvent.Disconnect) {
-            println("disconnect")
-        }
+                on(SocketEvent.Connecting) {
+                    println("connecting")
+                }
 
-        on(SocketEvent.Error) {
-            println("error $it")
-        }
+                on(SocketEvent.Disconnect) {
+                    println("disconnect")
+                }
 
-        on(SocketEvent.Reconnect) {
-            println("reconnect")
-        }
+                on(SocketEvent.Error) {
+                    println("error $it")
+                }
 
-        on(SocketEvent.ReconnectAttempt) {
-            println("reconnect attempt $it")
-        }
+                on(SocketEvent.Reconnect) {
+                    println("reconnect")
+                }
 
-        on(SocketEvent.Ping) {
-            println("ping")
-        }
+                on(SocketEvent.ReconnectAttempt) {
+                    println("reconnect attempt $it")
+                }
 
-        on(SocketEvent.Pong) {
-            println("pong")
-        }
+                on(SocketEvent.Ping) {
+                    println("ping")
+                }
 
-        on("employee.connected") { data ->
-            println(data)
+                on(SocketEvent.Pong) {
+                    println("pong")
+                }
+
+                on("employee.connected") { data ->
+                    println(data)
+                }
+            }
+
+            socket.connect()
         }
     }
 }
