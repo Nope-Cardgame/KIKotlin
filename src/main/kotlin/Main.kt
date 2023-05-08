@@ -1,5 +1,6 @@
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import rest.RESTApi
 
 
 fun main() {
@@ -16,6 +17,11 @@ fun main() {
 
             val socketConnection = SocketConnection(loginResult)
 
+            val startGameReturn = restApi.startGame()
+            println("startGameReturn: ${startGameReturn?.players}")
+
+            val userConnections = restApi.userConnections()
+            println("userConnections: $userConnections")
         }
     }
 }

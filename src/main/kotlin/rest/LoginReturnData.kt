@@ -1,3 +1,5 @@
+package rest
+
 import com.google.gson.annotations.SerializedName
 
 /**

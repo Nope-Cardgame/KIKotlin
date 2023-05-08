@@ -1,3 +1,5 @@
+package rest
+
 /**
  * Represents the login credentials object used to signup nad signin a new api client on the nope server
  */
