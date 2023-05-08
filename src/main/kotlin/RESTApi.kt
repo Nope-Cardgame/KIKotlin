@@ -6,11 +6,14 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.gson.*
+import java.util.logging.Logger
 
 /**
  * Class to signup and signin to the nope card game server via the REST api
  */
 class RESTApi {
+    private val log = Logger.getLogger(this.javaClass.name)
+
     private val client: HttpClient = HttpClient(CIO) {
         install(ContentNegotiation) {
             gson()
@@ -29,6 +32,7 @@ class RESTApi {
             contentType(ContentType.Application.Json)
             setBody(LoginCredentials(username = username, password = password))
         }
+        log.finer("signUp http request finished")
 
         return response.body()
     }
@@ -45,6 +49,7 @@ class RESTApi {
             contentType(ContentType.Application.Json)
             setBody(LoginCredentials(username = username, password = password))
         }
+        log.finer("signIn http request finished")
 
         return response.body()
     }

@@ -20,7 +20,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-gson:2.3.0")
 
     //SocketIO
-    implementation("dev.icerock.moko:socket-io:0.3.0")
+    implementation("io.socket:socket.io-client:2.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1")
 }
 
