@@ -19,6 +19,16 @@ object Constants {
             const val CONNECT = "connect"
             const val CONNECT_ERROR = "connect_error"
             const val DISCONNECT = "disconnect"
+
+            // individual nope related game events
+            const val GAME_STATE = "gameState"
+            const val ERROR = "error"
+            const val BANNED = "banned"
+            const val PLAY_ACTION = "playAction"
+            const val GAME_END = "gameEnd"
+            const val TOURNAMENT_INVITE = "tournamentInvite"
+            const val GAME_INVITE = "gameInvite"
+            const val READY = "ready"
         }
     }
 }
