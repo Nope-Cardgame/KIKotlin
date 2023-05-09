@@ -1,6 +1,7 @@
 package rest
 
 import Constants
+import entity.Player
 import entity.StartGameReturn
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -67,14 +68,17 @@ class RESTApi {
     /**
      * Starts a nope game
      * */
-    suspend fun startGame(): StartGameReturn? {
-        return client.post(Constants.API.START_GAME).body()
+    suspend fun startGame(gameConfig: StartGameReturn): StartGameReturn? {
+        return client.post(Constants.API.START_GAME){
+            contentType(ContentType.Application.Json)
+            setBody(gameConfig)
+        }.body()
     }
 
     /**
      * Lists all user connections
      * */
-    suspend fun userConnections(): String {
+    suspend fun userConnections(): List<Player> {
         return client.get(Constants.API.USER_CONNECTIONS).body()
     }
 

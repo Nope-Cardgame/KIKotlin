@@ -1,9 +1,15 @@
+import com.google.gson.Gson
+import entity.Game
+import entity.PlayerReady
+import entity.ReadyGameType
 import io.socket.client.IO
 import io.socket.client.Socket
+import org.json.JSONObject
 import rest.LoginReturnData
 import java.net.URI
 import java.util.*
 import java.util.logging.Logger
+
 
 /**
  * Represents a web-socket connection using the socket-io library.
@@ -61,8 +67,11 @@ class SocketConnection(loginReturnData: LoginReturnData) {
 
 
         /********* invitation *********/
-        socket.on(Constants.WebSocket.EVENTS.GAME_INVITE){
+        socket.on(Constants.WebSocket.EVENTS.GAME_INVITE){ arr ->
             log.warning("web-socket: game invite")
+            val content = (arr.first() as JSONObject).toString()
+            val game = Gson().fromJson(content, Game::class.java)
+            ready(game.id)
         }
         socket.on(Constants.WebSocket.EVENTS.TOURNAMENT_INVITE){
             log.warning("web-socket: tournament invite")
@@ -79,5 +88,17 @@ class SocketConnection(loginReturnData: LoginReturnData) {
         socket.on(Constants.WebSocket.EVENTS.PLAY_ACTION){
             log.warning("web-socket: play action")
         }
+    }
+
+    private fun ready(inviteId: String){
+        val ready = PlayerReady(
+            accept = true,
+            type = ReadyGameType.game,
+            inviteId = inviteId
+        )
+        val readyJson = Gson().toJson(ready)
+        val jsonObjectReady = JSONObject(readyJson)
+
+        socket.emit(Constants.WebSocket.EVENTS.READY, jsonObjectReady)
     }
 }
