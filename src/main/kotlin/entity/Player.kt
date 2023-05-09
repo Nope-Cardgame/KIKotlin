@@ -5,9 +5,10 @@ package entity
  * Represents a nope player
  */
 data class Player (
-    val name: String,
-    val websocketID: String,
+    val username: String,
+    val socketId: String,
     val cardAmount: Int,
     val cards: List<Card>,
-    val score: Int
+    val ranking: Int,
+    val disqualified: Boolean,
 )

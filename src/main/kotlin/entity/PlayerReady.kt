@@ -9,7 +9,7 @@ import com.google.gson.annotations.SerializedName
  */
 data class PlayerReady (
     val accept: Boolean,
-    val type: GameType,
+    val type: GameRole,
     @SerializedName("invite_id")
     val inviteId: Int
 )

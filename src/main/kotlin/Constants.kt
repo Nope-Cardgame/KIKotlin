@@ -10,6 +10,9 @@ object Constants {
         const val SIGNUP = "$API_PATH/signup"
         const val SIGNIN = "$API_PATH/signin"
         const val START_GAME = "$API_PATH/game"
+        const val START_TOURNAMENT = "$API_PATH/tournament"
+        const val GAME_INFO = "$API_PATH/game/"
+        const val TOURNAMENT_INFO = "$API_PATH/tournament/"
         const val USER_CONNECTIONS = "$API_PATH/userConnections"
     }
 

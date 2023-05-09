@@ -5,9 +5,9 @@ import entity.Player
 
 
 /**
- * States, that a player is eliminated
+ * States, that a player said nope
  */
-class EliminatedPlayerAction(
+class SayNopeAction(
     type: GameActionType,
     explanation: String,
     player: Player
