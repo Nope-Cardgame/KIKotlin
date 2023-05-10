@@ -2,7 +2,7 @@ package rest
 
 import Constants
 import entity.Player
-import entity.StartGameReturn
+import entity.StartGamePostData
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -68,7 +68,7 @@ class RESTApi {
     /**
      * Starts a nope game
      * */
-    suspend fun startGame(gameConfig: StartGameReturn): StartGameReturn? {
+    suspend fun startGame(gameConfig: StartGamePostData): StartGamePostData? {
         return client.post(Constants.API.START_GAME){
             contentType(ContentType.Application.Json)
             setBody(gameConfig)

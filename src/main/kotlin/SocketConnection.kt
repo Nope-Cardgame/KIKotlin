@@ -1,10 +1,7 @@
-import com.google.gson.Gson
-import entity.Game
-import entity.PlayerReady
-import entity.ReadyGameType
+import entity.*
+import entity.action.GameAction
 import io.socket.client.IO
 import io.socket.client.Socket
-import org.json.JSONObject
 import rest.LoginReturnData
 import java.net.URI
 import java.util.*
@@ -14,11 +11,18 @@ import java.util.logging.Logger
 /**
  * Represents a web-socket connection using the socket-io library.
  * This class uses the [LoginReturnData] object returned by the webserver REST api after successful login
+ * @param loginReturnData authentication data received from the rest login
+ * @param nopeEventListener listener that should be notified when an event occurs
  * @see rest.RESTApi.signIn
  * @see rest.RESTApi.signUp
+ *
  */
-class SocketConnection(loginReturnData: LoginReturnData) {
+class SocketConnection(
+    loginReturnData: LoginReturnData,
+    private val nopeEventListener: NopeEventListener
+) : NopeGame {
     private val log = Logger.getLogger(this.javaClass.name)
+    private val serializationHelper = SerializationHelper()
 
     // server web-socket uri
     private val serverURI: URI = URI.create(Constants.WebSocket.URL)
@@ -43,62 +47,113 @@ class SocketConnection(loginReturnData: LoginReturnData) {
         /********* technical *********/
         socket.on(Constants.WebSocket.EVENTS.CONNECT) {
             log.info("web-socket connected")
+            nopeEventListener.socketConnected()
         }
 
         socket.on(Constants.WebSocket.EVENTS.CONNECT_ERROR) {
             log.severe("web-socket connect error occurred")
+            nopeEventListener.socketConnectError(it.firstOrNull().toString())
         }
 
         socket.on(Constants.WebSocket.EVENTS.DISCONNECT) {
             log.warning("web-socket disconnected")
+            nopeEventListener.socketDisconnected()
         }
 
 
         /********* structure *********/
-        socket.on(Constants.WebSocket.EVENTS.BANNED){
-            log.warning("web-socket: banned")
+        onData<PlayerEliminated>(Constants.WebSocket.EVENTS.ELIMINATED) { playerEliminated ->
+            nopeEventListener.clientEliminated(playerEliminated)
         }
-        socket.on(Constants.WebSocket.EVENTS.ERROR){
-            log.warning("web-socket: error")
-        }
-        socket.on(Constants.WebSocket.EVENTS.READY){
-            log.warning("web-socket: ready")
+        onData<CommunicationError>(Constants.WebSocket.EVENTS.ERROR) { communicationError ->
+            nopeEventListener.communicationError(communicationError)
         }
 
 
         /********* invitation *********/
-        socket.on(Constants.WebSocket.EVENTS.GAME_INVITE){ arr ->
-            log.warning("web-socket: game invite")
-            val content = (arr.first() as JSONObject).toString()
-            val game = Gson().fromJson(content, Game::class.java)
-            ready(game.id)
+        onData<Game>(Constants.WebSocket.EVENTS.GAME_INVITE) { game ->
+            // notify listener about invitation
+            val acceptInvitation = nopeEventListener.gameInvite(game)
+            // only ready if the listener returned true
+            if (acceptInvitation) {
+                ready(game.id, ReadyGameType.game)
+            }
         }
-        socket.on(Constants.WebSocket.EVENTS.TOURNAMENT_INVITE){
-            log.warning("web-socket: tournament invite")
+        onData<Tournament>(Constants.WebSocket.EVENTS.TOURNAMENT_INVITE) { tournament ->
+            // notify listener about invitation
+            val acceptInvitation = nopeEventListener.tournamentInvite(tournament)
+            // only ready if the listener returned true
+            if (acceptInvitation) {
+                ready(tournament.id, ReadyGameType.tournament)
+            }
         }
 
 
         /********* game related *********/
-        socket.on(Constants.WebSocket.EVENTS.GAME_END){
-            log.warning("web-socket: game end")
+        onData<Game>(Constants.WebSocket.EVENTS.GAME_END) { game ->
+            nopeEventListener.gameEnd(game)
         }
-        socket.on(Constants.WebSocket.EVENTS.GAME_STATE){
-            log.warning("web-socket: game state")
+        onData<Tournament>(Constants.WebSocket.EVENTS.TOURNAMENT_END) { tournament ->
+            nopeEventListener.tournamentEnd(tournament)
         }
-        socket.on(Constants.WebSocket.EVENTS.PLAY_ACTION){
-            log.warning("web-socket: play action")
+        onData<Game>(Constants.WebSocket.EVENTS.GAME_STATE) { game ->
+            nopeEventListener.gameStateUpdate(game)
+        }
+        onData<GameAction>(Constants.WebSocket.EVENTS.PLAY_ACTION) { action ->
+            // TODO klären ob das wirklich gesendet werden soll, siehe NopeGame doc
         }
     }
 
-    private fun ready(inviteId: String){
+    /**
+     * Calls the [Socket.on] method, serializes the received data array using the [SerializationHelper] class to be
+     * sent as data parameter in the [listener] callback.
+     * Furthermore, this method logs the web socket event using the [log].
+     * */
+    private inline fun <reified T> onData(event: String, crossinline listener: (data: T) -> Unit) {
+        socket.on(event) {
+            log.info("web-socket event received: $event")
+            listener(serializationHelper.deserialize(it))
+        }
+    }
+
+    /**
+     * Emits a socket event using the [Socket.emit] method with the data object as data
+     * @param data object to be sent along with the socket event
+     * */
+    private fun <T> emitData(event: String, data: T) {
+        socket.emit(event, serializationHelper.serialize(data))
+    }
+
+    /**
+     * Creates a [PlayerReady] object with the given parameters and sends the [Constants.WebSocket.EVENTS.READY] event
+     * using the socket
+     * @param inviteId [Game.id] of the game object sent along with the invitation event
+     * @param readyGameType game type for the invitation
+     * */
+    private fun ready(inviteId: String, readyGameType: ReadyGameType) {
         val ready = PlayerReady(
             accept = true,
-            type = ReadyGameType.game,
+            type = readyGameType,
             inviteId = inviteId
         )
-        val readyJson = Gson().toJson(ready)
-        val jsonObjectReady = JSONObject(readyJson)
+        emitData(Constants.WebSocket.EVENTS.READY, ready)
+    }
 
-        socket.emit(Constants.WebSocket.EVENTS.READY, jsonObjectReady)
+    /********* Implemented interface methods relate to [NopeGame] *********/
+
+    override fun takeCard() {
+        // TODO klären ob das wirklich gesendet werden soll, siehe NopeGame doc
+    }
+
+    override fun discardCard(card: Card) {
+        // TODO klären ob das wirklich gesendet werden soll, siehe NopeGame doc
+    }
+
+    override fun nominateCard(card: Card) {
+        // TODO klären ob das wirklich gesendet werden soll, siehe NopeGame doc
+    }
+
+    override fun sayNope() {
+        // TODO klären ob das wirklich gesendet werden soll, siehe NopeGame doc
     }
 }

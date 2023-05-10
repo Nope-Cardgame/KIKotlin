@@ -5,7 +5,7 @@ package entity
  * This class is not yet explained in detail according to the project documentation
  */
 class Tournament(
-    val id: Long,
+    val id: String,
     val mode: TournamentMode,
     val participants: List<TournamentParticipant>,
     val games: List<Game>,
