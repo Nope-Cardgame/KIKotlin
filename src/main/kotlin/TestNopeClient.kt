@@ -1,4 +1,6 @@
 import entity.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.util.logging.ConsoleHandler
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -7,8 +9,19 @@ import java.util.logging.Logger
 /**
  * NopeClient for testing purpose
  */
-class TestNopeClient : NopeEventListener {
+class TestNopeClient(
+    username: String = "kotlin",
+    password: String = "kotlin"
+) : NopeEventListener {
     private val log = Logger.getLogger(this.javaClass.name)
+
+    // instantiate interface and set this client as event listener
+    private val kotlinClientInterface = KotlinClientInterface(
+        username = username,
+        password = password,
+        alreadySignedUp = true,
+        nopeEventListener = this
+    )
 
     init {
         val consoleHandler = ConsoleHandler()
@@ -16,6 +29,28 @@ class TestNopeClient : NopeEventListener {
         log.addHandler(consoleHandler)
         log.level = Level.ALL
         log.useParentHandlers = false
+    }
+
+    /**
+     * Test method to let one client start the game
+     * */
+    fun startGame() {
+        runBlocking {
+            launch {
+                val userConnections = kotlinClientInterface.getUserConnections()
+                // test game with kotlin client players only
+                val invitePlayers = userConnections.filter { it.username.contains("kotlin") }
+
+                kotlinClientInterface.startGame(
+                    StartGamePostData(
+                        noActionCards = true,
+                        noWildcards = false,
+                        oneMoreStartCards = false,
+                        players = invitePlayers
+                    )
+                )
+            }
+        }
     }
 
     override fun socketConnected() {
