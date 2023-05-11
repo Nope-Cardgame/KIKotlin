@@ -10,6 +10,7 @@ import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.gson.*
 import java.util.logging.Logger
@@ -56,13 +57,16 @@ class RESTApi {
      *
      * @return the response from the server
      * */
-    suspend fun signIn(username: String, password: String): LoginReturnData {
-        val loginReturnData: LoginReturnData = client.post(Constants.API.SIGNIN) {
+    suspend fun signIn(username: String, password: String): LoginReturnData? {
+        val result: HttpResponse = client.post(Constants.API.SIGNIN) {
             authenticate(username = username, password = password)
-        }.body()
+        }
 
-        authenticateClient(loginReturnData)
-        return loginReturnData
+        return if (result.status.isSuccess()) {
+            val loginReturnData: LoginReturnData = result.body()
+            authenticateClient(loginReturnData)
+            loginReturnData
+        } else null
     }
 
     /**

@@ -9,11 +9,13 @@ import rest.RESTApi
  *
  * Unites the functionality of the [RESTApi] and the [SocketConnection] classes to one API to allow
  * simple access to the nope game for each kotlin client.
+ *
+ * This class automatically authenticates to the REST api and the web-socket using the given credentials.
+ * If the account is not already signed up, this class will automatically sign up the user.
  */
 class KotlinClientInterface(
     username: String,
     password: String,
-    alreadySignedUp: Boolean,
     nopeEventListener: NopeEventListener
 ) : NopeGame {
 
@@ -23,9 +25,9 @@ class KotlinClientInterface(
     init {
         runBlocking {
             launch {
-                val loginResult =
-                    if (alreadySignedUp) restApi.signIn(username, password)
-                    else restApi.signUp(username, password)
+                // try sign-in with credentials and fallback to signup process
+                // when an error occurred and the user is not already registered
+                val loginResult = restApi.signIn(username, password) ?: restApi.signUp(username, password)
 
                 // build socket connection
                 socketConnection = SocketConnection(loginResult, nopeEventListener)

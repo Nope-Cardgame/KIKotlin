@@ -19,7 +19,6 @@ class TestNopeClient(
     private val kotlinClientInterface = KotlinClientInterface(
         username = username,
         password = password,
-        alreadySignedUp = true,
         nopeEventListener = this
     )
 
