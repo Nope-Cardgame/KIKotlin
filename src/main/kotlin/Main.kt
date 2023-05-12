@@ -1,21 +1,18 @@
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-
 fun main() {
-    val username = "kotlin"
-    val password = "kotlin"
-    val username2 = "kotlin2"
-    val password2 = "kotlin2"
+    val username = "kotlin5"
+    val password = "kotlin5"
+    val username2 = "kotlin6"
+    val password2 = "kotlin6"
 
-    // instantiate client
-    val testNopeClient1 = TestNopeClient(
-        username = username,
-        password = password
-    )
+    // instantiate clients
     val testNopeClient2 = TestNopeClient(
         username = username2,
         password = password2
+    )
+    val testNopeClient1 = TestNopeClient(
+        username = username,
+        password = password,
+        usernameToInvite = username2
     )
 
 }

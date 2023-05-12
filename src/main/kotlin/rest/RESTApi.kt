@@ -13,7 +13,6 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.gson.*
-import java.util.logging.Logger
 
 /**
  * Class to signup and signin to the nope card game server via the REST api
@@ -25,7 +24,6 @@ import java.util.logging.Logger
  * - all other requests -> uses [LoginReturnData] object, which internally contains the token
  */
 class RESTApi {
-    private val log = Logger.getLogger(this.javaClass.name)
 
     private var client: HttpClient = HttpClient(CIO) {
         install(ContentNegotiation) {

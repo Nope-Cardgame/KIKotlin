@@ -5,7 +5,6 @@ import io.socket.client.Socket
 import rest.LoginReturnData
 import java.net.URI
 import java.util.*
-import java.util.logging.Logger
 
 
 /**
@@ -21,7 +20,6 @@ class SocketConnection(
     loginReturnData: LoginReturnData,
     private val nopeEventListener: NopeEventListener
 ) : NopeGame {
-    private val log = Logger.getLogger(this.javaClass.name)
     private val serializationHelper = SerializationHelper()
 
     // server web-socket uri
@@ -46,17 +44,14 @@ class SocketConnection(
     private fun registerEvents() {
         /********* technical *********/
         socket.on(Constants.WebSocket.EVENTS.CONNECT) {
-            log.info("web-socket connected")
             nopeEventListener.socketConnected()
         }
 
         socket.on(Constants.WebSocket.EVENTS.CONNECT_ERROR) {
-            log.severe("web-socket connect error occurred")
             nopeEventListener.socketConnectError(it.firstOrNull().toString())
         }
 
         socket.on(Constants.WebSocket.EVENTS.DISCONNECT) {
-            log.warning("web-socket disconnected")
             nopeEventListener.socketDisconnected()
         }
 
@@ -111,7 +106,6 @@ class SocketConnection(
      * */
     private inline fun <reified T> onData(event: String, crossinline listener: (data: T) -> Unit) {
         socket.on(event) {
-            log.info("web-socket event received: $event")
             listener(serializationHelper.deserialize(it))
         }
     }
