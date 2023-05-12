@@ -154,6 +154,6 @@ class SocketConnection(
     }
 
     override fun sayNope() {
-        // TODO klären ob das wirklich gesendet werden soll, siehe NopeGame doc
+//        socket.emit(Constants.WebSocket.EVENTS.PLAY_ACTION, ) // TODO add data
     }
 }

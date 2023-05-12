@@ -33,7 +33,7 @@ class TestNopeClient(
     /**
      * Test method to let one client start the game
      * */
-    fun startGame() {
+    private fun startGame() {
         runBlocking {
             launch {
                 val userConnections = kotlinClientInterface.getUserConnections()
@@ -54,6 +54,13 @@ class TestNopeClient(
 
     override fun socketConnected() {
         log.fine("socketConnected invoked")
+
+        runBlocking {
+            launch {
+                // Let client start the game. This will cause client1 to invite all players with name "kotlin" contained
+                startGame()
+            }
+        }
     }
 
     override fun socketConnectError(error: String?) {

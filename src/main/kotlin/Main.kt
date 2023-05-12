@@ -18,15 +18,4 @@ fun main() {
         password = password2
     )
 
-
-    runBlocking {
-        launch {
-            // delay is necessary to avoid sending rest request before socket connection completed
-            // TODO should be improved in future
-            delay(1000)
-            // Let client1 start the game. This will cause client1 to invite all players with name "kotlin" contained
-            testNopeClient1.startGame()
-        }
-    }
-
 }
