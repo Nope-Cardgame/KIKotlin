@@ -135,7 +135,7 @@ class SocketConnection(
     /********* Implemented interface methods relate to [NopeGame] *********/
 
     override fun takeCard(explanation: String) {
-        socket.emit(
+        emitData(
             Constants.WebSocket.EVENTS.PLAY_ACTION,
             TakeCardAction(
                 explanation = explanation
@@ -144,7 +144,7 @@ class SocketConnection(
     }
 
     override fun discardCard(cards: List<Card>, explanation: String) {
-        socket.emit(
+        emitData(
             Constants.WebSocket.EVENTS.PLAY_ACTION,
             DiscardCardAction(
                 explanation = explanation,
@@ -159,7 +159,7 @@ class SocketConnection(
         nominatedColor: CardColor,
         explanation: String
     ) {
-        socket.emit(
+        emitData(
             Constants.WebSocket.EVENTS.PLAY_ACTION,
             NominateCardAction(
                 explanation = explanation,
@@ -171,7 +171,7 @@ class SocketConnection(
     }
 
     override fun sayNope(explanation: String) {
-        socket.emit(
+        emitData(
             Constants.WebSocket.EVENTS.PLAY_ACTION,
             SayNopeAction(
                 explanation
