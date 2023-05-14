@@ -8,7 +8,6 @@ import entity.Player
  * States, that a player said nope
  */
 class SayNopeAction(
-    type: GameActionType,
     explanation: String,
-    player: Player
-) : GameAction(type, explanation, player)
+    player: Player? = null
+) : GameAction(GameActionType.nope, explanation, player)

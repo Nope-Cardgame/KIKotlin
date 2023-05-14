@@ -1,4 +1,6 @@
 import entity.Card
+import entity.CardColor
+import entity.Player
 
 /**
  * Interface for the client to play a nope game
@@ -11,22 +13,22 @@ interface NopeGame {
     /**
      * Take a card from the draw pile
      * */
-    fun takeCard()
+    fun takeCard(explanation: String = "")
 
     /**
      * Discard a card to the discard pile
-     * @param card card to be discarded
+     * @param cards cards to be discarded
      * */
-    fun discardCard(card: Card)
+    fun discardCard(cards: List<Card>, explanation: String = "")
 
     /**
      * Nominate a card. TODO noch nicht verstanden was das macht
-     * @param card TODO
+     * @param cards TODO
      * */
-    fun nominateCard(card: Card)
+    fun nominateCard(cards: List<Card>, nominatedPlayer: Player, nominatedColor: CardColor, explanation: String = "")
 
     /**
      * Says nope
      * */
-    fun sayNope()
+    fun sayNope(explanation: String = "")
 }

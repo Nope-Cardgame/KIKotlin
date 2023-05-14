@@ -10,10 +10,9 @@ import entity.Player
  * States, that a player nominated a card
  */
 class NominateCardAction(
-    type: GameActionType,
     explanation: String,
-    player: Player,
+    player: Player? = null,
     val cards: List<Card>,
     val nominatedPlayer: Player,
     val nominatedColor: CardColor
-) : GameAction(type, explanation, player)
+) : GameAction(GameActionType.nominate, explanation, player)

@@ -9,5 +9,5 @@ import entity.Player
 open class GameAction(
     val type: GameActionType,
     val explanation: String,
-    val player: Player
+    val player: Player? = null
 )

@@ -1,5 +1,5 @@
 import entity.*
-import entity.action.GameAction
+import entity.action.*
 import io.socket.client.IO
 import io.socket.client.Socket
 import rest.LoginReturnData
@@ -102,7 +102,6 @@ class SocketConnection(
     /**
      * Calls the [Socket.on] method, serializes the received data array using the [SerializationHelper] class to be
      * sent as data parameter in the [listener] callback.
-     * Furthermore, this method logs the web socket event using the [log].
      * */
     private inline fun <reified T> onData(event: String, crossinline listener: (data: T) -> Unit) {
         socket.on(event) {
@@ -135,19 +134,48 @@ class SocketConnection(
 
     /********* Implemented interface methods relate to [NopeGame] *********/
 
-    override fun takeCard() {
-        // TODO klären ob das wirklich gesendet werden soll, siehe NopeGame doc
+    override fun takeCard(explanation: String) {
+        socket.emit(
+            Constants.WebSocket.EVENTS.PLAY_ACTION,
+            TakeCardAction(
+                explanation = explanation
+            )
+        )
     }
 
-    override fun discardCard(card: Card) {
-        // TODO klären ob das wirklich gesendet werden soll, siehe NopeGame doc
+    override fun discardCard(cards: List<Card>, explanation: String) {
+        socket.emit(
+            Constants.WebSocket.EVENTS.PLAY_ACTION,
+            DiscardCardAction(
+                explanation = explanation,
+                cards = cards
+            )
+        )
     }
 
-    override fun nominateCard(card: Card) {
-        // TODO klären ob das wirklich gesendet werden soll, siehe NopeGame doc
+    override fun nominateCard(
+        cards: List<Card>,
+        nominatedPlayer: Player,
+        nominatedColor: CardColor,
+        explanation: String
+    ) {
+        socket.emit(
+            Constants.WebSocket.EVENTS.PLAY_ACTION,
+            NominateCardAction(
+                explanation = explanation,
+                cards = cards,
+                nominatedPlayer = nominatedPlayer,
+                nominatedColor = nominatedColor
+            )
+        )
     }
 
-    override fun sayNope() {
-//        socket.emit(Constants.WebSocket.EVENTS.PLAY_ACTION, ) // TODO add data
+    override fun sayNope(explanation: String) {
+        socket.emit(
+            Constants.WebSocket.EVENTS.PLAY_ACTION,
+            SayNopeAction(
+                explanation
+            )
+        )
     }
 }

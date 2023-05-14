@@ -1,8 +1,8 @@
 fun main() {
-    val username = "kotlin5"
-    val password = "kotlin5"
-    val username2 = "kotlin6"
-    val password2 = "kotlin6"
+    val username = "kotlin"
+    val password = "kotlin"
+    val username2 = "kotlin2"
+    val password2 = "kotlin2"
 
     // instantiate clients
     val testNopeClient2 = TestNopeClient(

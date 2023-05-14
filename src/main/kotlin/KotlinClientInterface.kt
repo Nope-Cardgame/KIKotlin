@@ -1,4 +1,6 @@
 import entity.Card
+import entity.CardColor
+import entity.Player
 import entity.StartGamePostData
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -49,9 +51,16 @@ class KotlinClientInterface(
      * */
     suspend fun startGame(startGamePostData: StartGamePostData) = restApi.startGame(startGamePostData)
 
+
     /**** delegating client actions to the socket connection ****/
-    override fun takeCard() = socketConnection.takeCard()
-    override fun discardCard(card: Card) = socketConnection.discardCard(card)
-    override fun nominateCard(card: Card) = socketConnection.nominateCard(card)
-    override fun sayNope() = socketConnection.sayNope()
+    override fun takeCard(explanation: String) = socketConnection.takeCard(explanation)
+    override fun discardCard(cards: List<Card>, explanation: String) = socketConnection.discardCard(cards, explanation)
+    override fun nominateCard(
+        cards: List<Card>,
+        nominatedPlayer: Player,
+        nominatedColor: CardColor,
+        explanation: String
+    ) = socketConnection.nominateCard(cards, nominatedPlayer, nominatedColor, explanation)
+    override fun sayNope(explanation: String) = socketConnection.sayNope(explanation)
+
 }
