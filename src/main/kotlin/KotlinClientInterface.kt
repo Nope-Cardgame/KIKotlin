@@ -44,6 +44,16 @@ class KotlinClientInterface(
     suspend fun getUserConnections() = restApi.userConnections()
 
     /**
+     * Returns the clients current socket id
+     * */
+    fun getClientSocketID() = socketConnection.getSocketID()
+
+    /**
+     * Disconnects the socket
+     * */
+    fun disconnectSocket() = socketConnection.disconnectSocket()
+
+    /**
      * Invites the players and tries to start the game
      * @param startGamePostData configures the game, that should be started
      *

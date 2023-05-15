@@ -1,5 +1,8 @@
 import entity.*
-import entity.action.*
+import entity.action.DiscardCardAction
+import entity.action.NominateCardAction
+import entity.action.SayNopeAction
+import entity.action.TakeCardAction
 import io.socket.client.IO
 import io.socket.client.Socket
 import rest.LoginReturnData
@@ -175,5 +178,17 @@ class SocketConnection(
                 explanation
             )
         )
+    }
+
+    /**
+     * @return the current socket id
+     * */
+    fun getSocketID(): String = socket.id()
+
+    /**
+     * Disconnects the socket
+     * */
+    fun disconnectSocket() {
+        socket.disconnect()
     }
 }
