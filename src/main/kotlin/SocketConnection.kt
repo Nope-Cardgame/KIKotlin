@@ -17,7 +17,7 @@ import java.util.*
  *
  */
 class SocketConnection(
-    loginReturnData: LoginReturnData,
+    private val loginReturnData: LoginReturnData,
     private val nopeEventListener: NopeEventListener
 ) : NopeGame {
     private val serializationHelper = SerializationHelper()
@@ -32,6 +32,7 @@ class SocketConnection(
 
     // socket io object
     private val socket: Socket = IO.socket(serverURI, socketOptions)
+
 
     init {
         registerEvents()
@@ -93,9 +94,6 @@ class SocketConnection(
         }
         onData<Game>(Constants.WebSocket.EVENTS.GAME_STATE) { game ->
             nopeEventListener.gameStateUpdate(game)
-        }
-        onData<GameAction>(Constants.WebSocket.EVENTS.PLAY_ACTION) { action ->
-            // TODO klären ob das wirklich gesendet werden soll, siehe NopeGame doc
         }
     }
 

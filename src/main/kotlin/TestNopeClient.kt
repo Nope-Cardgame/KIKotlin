@@ -87,8 +87,11 @@ class TestNopeClient(
 
     override fun gameStateUpdate(game: Game) {
         log.fine("gameStateUpdate received")
-        // take card by default
-        kotlinClientInterface.takeCard()
+        // check whether it is the client turn
+        if (game.currentPlayer.username == username) {
+            // take card by default
+            kotlinClientInterface.takeCard()
+        }
     }
 
     override fun communicationError(communicationError: CommunicationError) {

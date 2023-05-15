@@ -4,9 +4,6 @@ import entity.Player
 
 /**
  * Interface for the client to play a nope game
- * TODO klären wie actions (takeCard, discardCard, nominateCard, say nope) funktionieren, soll da ein CardAction/SayNopeAction Objekt gesendet werden?
- *  ergibt doch mehr sinn das zu empfangen, wie aber wird dann die abzulegende Karte übermittelt?!
- *  -> und wie funktioniert die disqualifyPlayer action? die muss noch im NopeEventListener richtig aufgerufen werden
  */
 interface NopeGame {
 
@@ -22,8 +19,8 @@ interface NopeGame {
     fun discardCard(cards: List<Card>, explanation: String = "")
 
     /**
-     * Nominate a card. TODO noch nicht verstanden was das macht
-     * @param cards TODO
+     * Nominate a player
+     * @param cards
      * */
     fun nominateCard(cards: List<Card>, nominatedPlayer: Player, nominatedColor: CardColor, explanation: String = "")
 
