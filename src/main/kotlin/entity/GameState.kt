@@ -14,6 +14,8 @@ enum class GameState {
     TURN_START,
     @SerializedName("card_drawn")
     CARD_DRAWN,
+    @SerializedName("cancelled")
+    CANCELLED,
     @SerializedName("game_end")
     GAME_END
 }
