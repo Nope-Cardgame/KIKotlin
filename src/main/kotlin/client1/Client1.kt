@@ -1,3 +1,8 @@
+package client1
+
+import KotlinClientInterface
+import LogConsoleFormatter
+import NopeEventListener
 import entity.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -8,9 +13,11 @@ import java.util.logging.Logger
 
 
 /**
- * NopeClient for testing purpose
+ * Client1-NopeClient
+ *
+ * Developer: [Jonas Pollpeter](https://github.com/JonasPTFL)
  */
-class TestNopeClient(
+class Client1(
     private val username: String,
     password: String,
     private val usernameToInvite: String? = null
@@ -46,7 +53,7 @@ class TestNopeClient(
         val playerToInvite = userConnections.first { it.username == usernameToInvite }
         val clientPlayer = userConnections.first { it.username == username }
 
-        val startGameResult =  kotlinClientInterface.startGame(
+        val startGameResult = kotlinClientInterface.startGame(
             StartGamePostData(
                 noActionCards = true,
                 noWildcards = false,
@@ -75,6 +82,8 @@ class TestNopeClient(
 
     override fun socketConnectError(error: String?) {
         log.fine("socketConnectError received")
+
+
     }
 
     override fun socketDisconnected() {
@@ -87,10 +96,47 @@ class TestNopeClient(
 
     override fun gameStateUpdate(game: Game) {
         log.fine("gameStateUpdate received")
-        // check whether it is the client turn
+        // check whether it is the clients turn
         if (game.currentPlayer.username == username) {
-            // take card by default
-            kotlinClientInterface.takeCard()
+            val clientPlayer = game.currentPlayer
+            // get current discard pile card (current card has index 0)
+            val currentDiscardPileCard =
+                game.discardPile.getOrNull(0) ?: throw Exception("discard pile is empty and game has not ended")
+            val discardableCards = getDiscardableCards(currentDiscardPileCard, clientPlayer.cards)
+
+            when(game.state) {
+                GameState.GAME_START -> {
+                    // game started
+                }
+                GameState.NOMINATE_FLIPPED -> {
+                    // nominate flipped
+                }
+                GameState.CARD_DRAWN,
+                GameState.TURN_START -> {
+                    // check whether this client can discard any set of cards
+                    if (discardableCards.isEmpty()) {
+                        // check whether this client took a card from the discard pile in the previous action
+                        if (game.state == GameState.CARD_DRAWN) {
+                            // this client drew a card in the previous action, say nope, because the client can not draw any card
+                            kotlinClientInterface.sayNope()
+                        } else if (game.state == GameState.TURN_START) {
+                            // this client did not draw a card last round and can not discard any set of cards
+                            kotlinClientInterface.takeCard()
+                        }
+                    } else {
+                        // discard first valid set
+                        kotlinClientInterface.discardCard(discardableCards[0].take(currentDiscardPileCard.value))
+                    }
+                }
+                GameState.GAME_END -> {
+                    // game ended
+
+                }
+                GameState.CANCELLED -> {
+                    // cancelled
+
+                }
+            }
         }
     }
 
@@ -104,6 +150,9 @@ class TestNopeClient(
 
     override fun gameEnd(game: Game) {
         log.fine("gameEnd received")
+
+        // print all players and their ranking
+        println(game.players.joinToString { "${it.username}: ${it.ranking}." })
     }
 
     override fun tournamentEnd(tournament: Tournament) {
@@ -120,5 +169,23 @@ class TestNopeClient(
         log.fine("tournamentInvite invoked(tournament: $tournament)")
         // accept all invitations by default
         return true
+    }
+
+    /**
+     * Finds all card sets of the same color, which contain enough cards to discard a specific part of them
+     * @param currentDiscardPileCard current first discard pile card
+     * @param hand hand of the client player
+     * */
+    private fun getDiscardableCards(currentDiscardPileCard: Card, hand: List<Card>): List<List<Card>> {
+        return currentDiscardPileCard.colors.mapNotNull { requiredColor ->
+            hand.filter { handCard ->
+                // filter hand by cards matching the required color
+                handCard.colors.contains(requiredColor)
+            }.takeIf { setCandidate ->
+                // filter card-set-candidates that matches the required amount of card, which is
+                // given by the number value of the current discard pile
+                setCandidate.size >= currentDiscardPileCard.value
+            }
+        }
     }
 }
