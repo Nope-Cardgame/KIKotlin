@@ -130,7 +130,7 @@ class Client1 : NopeEventListener {
                     // filter index+1, because the numbers printed to the console start from 1
                     userIndicesToInvite.contains(index + 1)
                 },
-                clientPlayer = connectedUsers.first { it.username == loginCredentials.username }, // TODO get client user by socket id
+                clientPlayer = connectedUsers.first { it.socketId == kotlinClientInterface.getClientSocketID() },
                 noActionCards = !actionCardsEnabled,
                 noWildCards = !wildCardsEnabled,
                 oneMoreStartCards = oneMoreStartCardsEnabled,
@@ -251,8 +251,15 @@ class Client1 : NopeEventListener {
         // print all players sorted by their ranking
         val playerListResult =
             game.players.sortedBy { it.ranking }.joinToString(separator = "\n") { it.getEndGameStringFormat() }
-        println("Game end - result:")
+        println("Game end (GameID: ${game.id}). Result ranking:")
         println(playerListResult)
+
+        // allow user to start a new game after one game finished
+        runBlocking {
+            launch {
+                askToInviteUsers()
+            }
+        }
     }
 
     override fun tournamentEnd(tournament: Tournament) {
