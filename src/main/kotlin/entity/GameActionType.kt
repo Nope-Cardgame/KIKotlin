@@ -1,12 +1,19 @@
 package entity
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * Represents a game action type
  */
 enum class GameActionType {
-    disqualify,
-    take,
-    discard,
-    nope,
-    nominate
+    @SerializedName("disqualify")
+    DISQUALIFY,
+    @SerializedName("take")
+    TAKE,
+    @SerializedName("discard")
+    DISCARD,
+    @SerializedName("nope")
+    NOPE,
+    @SerializedName("nominate")
+    NOMINATE
 }

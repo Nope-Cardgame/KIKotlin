@@ -15,4 +15,4 @@ class NominateCardAction(
     val cards: List<Card>,
     val nominatedPlayer: Player,
     val nominatedColor: CardColor
-) : GameAction(GameActionType.nominate, explanation, player)
+) : GameAction(GameActionType.NOMINATE, explanation, player)

@@ -72,7 +72,7 @@ class SocketConnection(
             val acceptInvitation = nopeEventListener.gameInvite(game)
             // only ready if the listener returned true
             if (acceptInvitation) {
-                ready(game.id, ReadyGameType.game)
+                ready(game.id, ReadyGameType.GAME)
             }
         }
         onData<Tournament>(Constants.WebSocket.EVENTS.TOURNAMENT_INVITE) { tournament ->
@@ -80,7 +80,7 @@ class SocketConnection(
             val acceptInvitation = nopeEventListener.tournamentInvite(tournament)
             // only ready if the listener returned true
             if (acceptInvitation) {
-                ready(tournament.id, ReadyGameType.tournament)
+                ready(tournament.id, ReadyGameType.TOURNAMENT)
             }
         }
 

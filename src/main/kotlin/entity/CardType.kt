@@ -1,9 +1,13 @@
 package entity
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * Represents a nope card type
  */
 enum class CardType {
-    number,
-    nominate
+    @SerializedName("number")
+    NUMBER,
+    @SerializedName("nominate")
+    NOMINATE
 }

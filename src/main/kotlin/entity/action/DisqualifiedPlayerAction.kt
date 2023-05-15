@@ -10,4 +10,4 @@ import entity.Player
 class DisqualifiedPlayerAction(
     explanation: String,
     player: Player? = null
-) : GameAction(GameActionType.disqualify, explanation, player)
+) : GameAction(GameActionType.DISQUALIFY, explanation, player)

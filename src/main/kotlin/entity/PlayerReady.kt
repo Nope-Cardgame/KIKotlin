@@ -1,5 +1,7 @@
 package entity
 
+import com.google.gson.annotations.SerializedName
+
 
 /**
  * Sent by this client, when this client is ready to play the game.
@@ -11,8 +13,9 @@ data class PlayerReady (
     val inviteId: String
 )
 
-enum class ReadyGameType(private val value: String) {
-    game("game"), tournament("tournament");
-
-    override fun toString() = value
+enum class ReadyGameType {
+    @SerializedName("game")
+    GAME,
+    @SerializedName("tournament")
+    TOURNAMENT
 }

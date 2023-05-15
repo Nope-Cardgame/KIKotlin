@@ -10,4 +10,4 @@ import entity.Player
 class SayNopeAction(
     explanation: String,
     player: Player? = null
-) : GameAction(GameActionType.nope, explanation, player)
+) : GameAction(GameActionType.NOPE, explanation, player)

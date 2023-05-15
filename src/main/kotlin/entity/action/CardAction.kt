@@ -21,11 +21,11 @@ class TakeCardAction(
     player: Player? = null,
     amount: Int? = null,
     cards: List<Card>? = null
-) : CardAction(GameActionType.take, explanation, player, amount, cards)
+) : CardAction(GameActionType.TAKE, explanation, player, amount, cards)
 
 class DiscardCardAction(
     explanation: String,
     player: Player? = null,
     amount: Int? = null,
     cards: List<Card>
-) : CardAction(GameActionType.discard, explanation, player, amount, cards)
+) : CardAction(GameActionType.DISCARD, explanation, player, amount, cards)
