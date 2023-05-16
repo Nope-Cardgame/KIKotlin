@@ -1,6 +1,7 @@
 package client1
 
 import entity.Card
+import entity.CardType
 
 
 /**
@@ -17,16 +18,29 @@ internal class Client1GameLogic {
      * @param currentDiscardPileCard current first discard pile card
      * @param hand hand of the client player
      * */
-    fun getDiscardableCards(currentDiscardPileCard: Card, hand: List<Card>): List<List<Card>> {
+    fun getDiscardableNumberCards(currentDiscardPileCard: Card, hand: List<Card>): List<List<Card>> {
         return currentDiscardPileCard.colors.mapNotNull { requiredColor ->
             hand.filter { handCard ->
                 // filter hand by cards matching the required color
-                handCard.colors.contains(requiredColor)
+                handCard.type == CardType.NUMBER && handCard.colors.contains(requiredColor)
             }.takeIf { setCandidate ->
                 // filter card-set-candidates that matches the required amount of card, which is
                 // given by the number value of the current discard pile
                 setCandidate.size >= currentDiscardPileCard.value
             }
         }
+    }
+    /**
+     * Finds playable action card
+     * */
+    fun getDiscardableActionCards(currentDiscardPileCard: Card, hand: List<Card>): List<Card> {
+        val discardableActionCards = mutableListOf<Card>()
+
+        val actionCardsNominate = hand.filter { it.type == CardType.NOMINATE && currentDiscardPileCard.colors.containsAny(it.colors) }
+        discardableActionCards.addAll(actionCardsNominate)
+
+        // TODO add more playable action cards
+
+        return discardableActionCards
     }
 }
