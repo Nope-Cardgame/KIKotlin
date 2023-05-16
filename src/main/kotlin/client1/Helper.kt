@@ -14,5 +14,14 @@ import entity.Player
 fun Boolean.toConsoleStringRepresentation() =
     if (this) Client1.Companion.Config.Console.BOOL_TRUE else Client1.Companion.Config.Console.BOOL_FALSE
 
-fun Player.getEndGameStringFormat() = "$username (SocketID: $socketId, disqualified: $disqualified, cards: $cardAmount, ranking: $ranking)"
+fun Player.getEndGameStringFormat() =
+    "$username (SocketID: $socketId, disqualified: $disqualified, cards: $cardAmount, ranking: $ranking)"
+
+/**
+ * Checks whether this list contains any of the given elements
+ * @return true, if any element of the given list [elements] is contained in this list
+ * */
+fun <T> List<T>.containsAny(elements: List<T>): Boolean {
+    return !none { elements.contains(it) }
+}
  

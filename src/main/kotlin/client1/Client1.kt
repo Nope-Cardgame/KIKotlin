@@ -7,7 +7,7 @@ import entity.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import rest.LoginCredentials
-import java.util.logging.ConsoleHandler
+import java.util.logging.FileHandler
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -28,16 +28,16 @@ class Client1 : NopeEventListener {
     private val gameLogic = Client1GameLogic()
 
     companion object {
-        val LOG_LEVEL: Level = Level.OFF
+        val LOG_LEVEL: Level = Level.ALL
 
         object Config {
-            const val ACCEPT_GAME_INVITATION_DEFAULT = false
-            const val ACCEPT_TOURNAMENT_INVITATION_DEFAULT = false
+            const val ACCEPT_GAME_INVITATION_DEFAULT = true
+            const val ACCEPT_TOURNAMENT_INVITATION_DEFAULT = true
 
             /**
              * States whether the client should accept all invitations automatically without any user input
              * */
-            const val ACCEPT_INVITATION_AUTOMATICALLY = false
+            const val ACCEPT_INVITATION_AUTOMATICALLY = true // changed for debugging purpose, was false
 
             object DefaultGame {
                 const val ACTION_CARDS_ENABLED = false
@@ -75,7 +75,7 @@ class Client1 : NopeEventListener {
      * Sets up the logger
      * */
     private fun setupLogger() {
-        val consoleHandler = ConsoleHandler()
+        val consoleHandler = FileHandler("./log.txt")
         consoleHandler.level = LOG_LEVEL
         consoleHandler.formatter = LogConsoleFormatter()
         log.addHandler(consoleHandler)
@@ -196,10 +196,6 @@ class Client1 : NopeEventListener {
         // check whether it is the clients turn
         if (game.currentPlayer.username == loginCredentials.username) {
             val clientPlayer = game.currentPlayer
-            // get current discard pile card (current card has index 0)
-            val currentDiscardPileCard =
-                game.discardPile.getOrNull(0) ?: throw Exception("discard pile is empty and game has not ended")
-            val discardableCards = gameLogic.getDiscardableCards(currentDiscardPileCard, clientPlayer.cards)
 
             when (game.state) {
                 GameState.GAME_START -> {
@@ -210,19 +206,48 @@ class Client1 : NopeEventListener {
                 }
                 GameState.CARD_DRAWN,
                 GameState.TURN_START -> {
-                    // check whether this client can discard any set of cards
-                    if (discardableCards.isEmpty()) {
-                        // check whether this client took a card from the discard pile in the previous action
-                        if (game.state == GameState.CARD_DRAWN) {
-                            // this client drew a card in the previous action, say nope, because the client can not draw any card
-                            kotlinClientInterface.sayNope()
-                        } else if (game.state == GameState.TURN_START) {
-                            // this client did not draw a card last round and can not discard any set of cards
-                            kotlinClientInterface.takeCard()
+                    // get current discard pile card (current card has index 0)
+                    val currentDiscardPileCard =
+                        game.discardPile.getOrNull(0) ?: throw Exception("discard pile is empty and game has not ended")
+                    val discardableNumberCards = gameLogic.getDiscardableNumberCards(currentDiscardPileCard, clientPlayer.cards)
+                    val discardableActionCards = gameLogic.getDiscardableActionCards(currentDiscardPileCard, clientPlayer.cards)
+
+                    when {
+                        // check whether this client can discard any set of cards
+                        discardableNumberCards.isNotEmpty() -> {
+                            // discard first valid set
+                            // TODO implement logic, that discards specific cards for a good reason and not just discard
+                            //  the first valid card set
+                            kotlinClientInterface.discardCard(discardableNumberCards[0].take(currentDiscardPileCard.value))
                         }
-                    } else {
-                        // discard first valid set
-                        kotlinClientInterface.discardCard(discardableCards[0].take(currentDiscardPileCard.value))
+                        // check whether this client can discard any action card
+                        discardableActionCards.isNotEmpty() -> {
+                            // discard first valid set
+                            // TODO implement logic, that discards specific action card and not the first one
+                            when (discardableActionCards[0].type) {
+                                CardType.NOMINATE -> {
+                                    // test call use nominate card
+                                    kotlinClientInterface.nominateCard(
+                                        cards = listOf(discardableActionCards[0]),
+                                        nominatedPlayer = game.players.first { it.socketId != clientPlayer.socketId }, // find first non-client player
+                                        CardColor.BLUE // static color choice
+                                    )
+                                }
+                                else -> {
+                                    TODO("Other action cards are not yet implemented")
+                                }
+                            }
+                        }
+                        else -> {
+                            // check whether this client took a card from the discard pile in the previous action
+                            if (game.state == GameState.CARD_DRAWN) {
+                                // this client drew a card in the previous action, say nope, because the client can not draw any card
+                                kotlinClientInterface.sayNope()
+                            } else if (game.state == GameState.TURN_START) {
+                                // this client did not draw a card last round and can not discard any set of cards
+                                kotlinClientInterface.takeCard()
+                            }
+                        }
                     }
                 }
                 GameState.GAME_END -> {
@@ -238,11 +263,11 @@ class Client1 : NopeEventListener {
     }
 
     override fun communicationError(communicationError: CommunicationError) {
-        log.fine("communicationError received")
+        log.fine("communicationError received: (message: ${communicationError.message})")
     }
 
     override fun clientEliminated(playerEliminated: PlayerEliminated) {
-        log.fine("clientEliminated received")
+        log.fine("clientEliminated received: (reason: ${playerEliminated.reason}, disqualified: ${playerEliminated.disqualified})")
     }
 
     override fun gameEnd(game: Game) {
