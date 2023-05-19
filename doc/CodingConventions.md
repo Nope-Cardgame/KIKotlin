@@ -12,4 +12,5 @@
   3. Methoden
   4. Companion object
 
-- generell orientieren sich unsere Richtlinien an den offiziellen Kotlin Conventions [https://kotlinlang.org/docs/coding-conventions.html#choose-good-names](https://kotlinlang.org/docs/coding-conventions.html#choose-good-names)
+- generell orientieren sich unsere Richtlinien an den offiziellen Kotlin Conventions
+[https://kotlinlang.org/docs/coding-conventions.html](https://kotlinlang.org/docs/coding-conventions.html)

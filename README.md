@@ -4,9 +4,9 @@ Repository für die Kotlin Clients und deren Schnittstellen.
 
 
 ## Dokumentation
-[Technische Dokumentation]()
+[Technische Dokumentation](https://github.com/Nope-Cardgame/KIKotlin/blob/16fdfb6eed3a06c6ebd31123adc867bfcbd85c07/doc/TechnischeDokumentation.md)
 
-[Coding Conventions]()
+[Coding Conventions](https://github.com/Nope-Cardgame/KIKotlin/blob/16fdfb6eed3a06c6ebd31123adc867bfcbd85c07/doc/CodingConventions.md)
 
 
 ## Mitglieder
