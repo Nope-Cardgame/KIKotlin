@@ -4,7 +4,9 @@ Repository für die Kotlin Clients und deren Schnittstellen.
 
 
 ## Dokumentation
-[Dokumentation noch ausstehend]()
+[Technische Dokumentation]()
+
+[Coding Conventions]()
 
 
 ## Mitglieder
@@ -23,16 +25,24 @@ Mitglied | entwickelter Client |
 
 ### Erklärung wie das Projekt ausgeführt wird
 
-1. Installation von benötigten Softwarepakete
-2. Klonen des GitHub-Repo
-3. Ausführen des Programms
+1. Installation von Kotlin und Java in den angegebenen Versionen 
+
+    ggf. Android SDK 33 (für Client2 benötigt)  
+3. Klonen des GitHub-Repo
+4. Ausführen der kompletten Gradle-Skripte, danach erst das Programm ausführen (Einstiegspunkt: Main.kt)
 
 
 ## Benutzung
 Beschreibung, wie das Programm bedient werden muss, um eine Verbindung zum NOPE-Server herzustellen (welche Konsoleneingaben/GUI Interaktionen müssen getätigt werden) und ein NOPE Spiel zu starten.
 
 ### Client1
-Beschreibung der Bedienung für Client1 um ein NOPE Spiel zu spielen
+Die Bedienung dieses Clients ist textbasiert über die Konsole aufgebaut. 
+
+Nach dem Start des Clients wird der Benutzer aufgefordert, einen Benutzernamen und ein Passwort einzugeben.
+Daraufhin versucht das Programm sich bei dem Server mti diesen Daten anzumelden. Sobald eine Verbindung hergestellt wurde, 
+werden die aktiven Benutzerverbindungen auf der Konsole aufgelistet. Dann erhält der Benutzer die Möglichkeit, bestimmte Spieler
+zu einem Nope-Spiel einzuladen oder diesen Schritt zu überspringen. Wenn der Benutzer selber eingeladen wird, muss er die Einladung
+annehmen, um dem Spiel beizutreten. Sobald ein Spiel beendet ist, wird erneut gefragt Spieler einzuladen und ein neues spiel zu starten. 
 
 ### Client2
 Beschreibung der Bedienung für Client2 um ein NOPE Spiel zu spielen
