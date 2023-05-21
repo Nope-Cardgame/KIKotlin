@@ -1,7 +1,4 @@
-import entity.Card
-import entity.CardColor
-import entity.Player
-import entity.StartGamePostData
+import entity.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import rest.RESTApi
@@ -61,6 +58,35 @@ class KotlinClientInterface(
      * */
     suspend fun startGame(startGamePostData: StartGamePostData) = restApi.startGame(startGamePostData)
 
+    /**
+     * Starts a tournament and invites the given players
+     * @param startTournamentPostData configures the tournament, that should be started
+     *
+     * @return tournament object from the server
+     * */
+    suspend fun startTournament(startTournamentPostData: StartTournamentPostData) =
+        restApi.startTournament(startTournamentPostData)
+
+    /**
+     * Searches for a played game with the given id
+     * */
+    suspend fun getGame(gameId: String) = restApi.getGame(gameId)
+
+    /**
+     * Returns all played games
+     * */
+    suspend fun getGames() = restApi.getGames()
+
+    /**
+     * Searches for a played tournament with the given id
+     * */
+    suspend fun getTournament(tournamentId: String) = restApi.getTournament(tournamentId)
+
+    /**
+     * Returns all played tournaments
+     * */
+    suspend fun getTournaments() = restApi.getTournaments()
+
 
     /**** delegating client actions to the socket connection ****/
     override fun takeCard(explanation: String) = socketConnection.takeCard(explanation)
@@ -69,8 +95,10 @@ class KotlinClientInterface(
         cards: List<Card>,
         nominatedPlayer: Player,
         nominatedColor: CardColor,
+        nominatedAmount: Int,
         explanation: String
-    ) = socketConnection.nominateCard(cards, nominatedPlayer, nominatedColor, explanation)
+    ) = socketConnection.nominateCard(cards, nominatedPlayer, nominatedColor, nominatedAmount, explanation)
+
     override fun sayNope(explanation: String) = socketConnection.sayNope(explanation)
 
 }

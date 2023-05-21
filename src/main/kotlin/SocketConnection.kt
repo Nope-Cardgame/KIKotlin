@@ -158,6 +158,7 @@ class SocketConnection(
         cards: List<Card>,
         nominatedPlayer: Player,
         nominatedColor: CardColor,
+        nominatedAmount: Int,
         explanation: String
     ) {
         emitData(
@@ -166,6 +167,7 @@ class SocketConnection(
                 explanation = explanation,
                 cards = cards,
                 nominatedPlayer = nominatedPlayer,
+                nominatedAmount = nominatedAmount,
                 nominatedColor = nominatedColor
             )
         )

@@ -18,6 +18,8 @@ data class Game (
     val players: List<Player>,
     val discardPile: List<Card>, // index 0 describes the first card on top of the pile
     val lastAction: GameAction,
+    val lastNominateAmount: Int,
+    val lastNominateColor: CardColor,
     val currentPlayer: Player,
     val startTime: String,
     val endTime: String,

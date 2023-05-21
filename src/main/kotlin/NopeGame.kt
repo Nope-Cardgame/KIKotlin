@@ -22,7 +22,13 @@ interface NopeGame {
      * Nominate a player
      * @param cards
      * */
-    fun nominateCard(cards: List<Card>, nominatedPlayer: Player, nominatedColor: CardColor, explanation: String = "")
+    fun nominateCard(
+        cards: List<Card>,
+        nominatedPlayer: Player,
+        nominatedColor: CardColor,
+        nominatedAmount: Int,
+        explanation: String = ""
+    )
 
     /**
      * Says nope

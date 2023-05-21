@@ -9,5 +9,9 @@ enum class CardType {
     @SerializedName("number")
     NUMBER,
     @SerializedName("nominate")
-    NOMINATE
+    NOMINATE,
+    @SerializedName("reset")
+    RESET,
+    @SerializedName("invisible")
+    INVISIBLE,
 }

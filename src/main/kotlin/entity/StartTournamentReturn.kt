@@ -4,7 +4,7 @@ package entity
 /**
  * Represents the result returned by the start game api endpoint [Constants.API.START_TOURNAMENT]
  */
-data class StartTournamentReturn(
+data class StartTournamentPostData(
     val mode: TournamentMode,
-    val players: List<Player>
+    val participants: List<Player>
 )

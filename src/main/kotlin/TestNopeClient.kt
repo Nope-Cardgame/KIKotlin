@@ -46,7 +46,7 @@ class TestNopeClient(
         val playerToInvite = userConnections.first { it.username == usernameToInvite }
         val clientPlayer = userConnections.first { it.username == username }
 
-        val startGameResult =  kotlinClientInterface.startGame(
+        val startGameResult = kotlinClientInterface.startGame(
             StartGamePostData(
                 noActionCards = true,
                 noWildcards = false,
@@ -55,7 +55,7 @@ class TestNopeClient(
             )
         )
         invitedUser = true
-        log.fine("sent game invite to players: ${startGameResult?.players}")
+        log.fine("sent game invite to players: ${startGameResult.players}")
     }
 
     override fun socketConnected() {
@@ -66,7 +66,7 @@ class TestNopeClient(
                 launch {
                     // wait until the other client is connected
                     delay(3000)
-                    // Let client start the game. This will cause client1 to invite all players with name "kotlin" contained
+                    // Let client start the game. This will cause client1 to invite the player with name usernameToInvite
                     startGame()
                 }
             }

@@ -1,8 +1,7 @@
 package rest
 
 import Constants
-import entity.Player
-import entity.StartGamePostData
+import entity.*
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -70,11 +69,49 @@ class RESTApi {
     /**
      * Starts a nope game
      * */
-    suspend fun startGame(gameConfig: StartGamePostData): StartGamePostData? {
+    suspend fun startGame(gameConfig: StartGamePostData): StartGamePostData {
         return client.post(Constants.API.START_GAME){
             contentType(ContentType.Application.Json)
             setBody(gameConfig)
         }.body()
+    }
+
+    /**
+     * Starts a tournament
+     * */
+    suspend fun startTournament(tournamentConfig: StartTournamentPostData): Tournament {
+        return client.post(Constants.API.START_TOURNAMENT){
+            contentType(ContentType.Application.Json)
+            setBody(tournamentConfig)
+        }.body()
+    }
+
+    /**
+     * Returns game by id
+     * */
+    suspend fun getGame(gameId: String): Game {
+        return client.get(Constants.API.GAME_INFO + gameId).body()
+    }
+
+    /**
+     * Returns all played games
+     * */
+    suspend fun getGames(): List<Game> {
+        return client.get(Constants.API.GAME_INFO).body()
+    }
+
+    /**
+     * Returns tournament by id
+     * */
+    suspend fun getTournament(tournamentId: String): Tournament {
+        return client.get(Constants.API.TOURNAMENT_INFO + tournamentId).body()
+    }
+
+    /**
+     * Returns all played tournaments
+     * */
+    suspend fun getTournaments(): List<Tournament> {
+        return client.get(Constants.API.TOURNAMENT_INFO).body()
     }
 
     /**
