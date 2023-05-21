@@ -160,7 +160,7 @@ class Client1 : NopeEventListener {
                 players = usersToInvite.plus(clientPlayer)
             )
         )
-        log.fine("sent game invite to socket ids: ${startGameResult?.players?.joinToString { it.socketId }}")
+        log.fine("sent game invite to socket ids: ${startGameResult.players.joinToString { it.socketId }}")
     }
 
     /**** Overridden Websocket Events ****/
@@ -230,7 +230,8 @@ class Client1 : NopeEventListener {
                                     kotlinClientInterface.nominateCard(
                                         cards = listOf(discardableActionCards[0]),
                                         nominatedPlayer = game.players.first { it.socketId != clientPlayer.socketId }, // find first non-client player
-                                        CardColor.BLUE // static color choice
+                                        nominatedColor = CardColor.BLUE, // static color choice
+                                        nominatedAmount = 1 // static amount choice
                                     )
                                 }
                                 else -> {
