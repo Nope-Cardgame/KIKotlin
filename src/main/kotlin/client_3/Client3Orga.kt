@@ -2,14 +2,13 @@ package client_3
 import KotlinClientInterface
 import NopeEventListener
 import entity.*
-import entity.action.CardAction
 import java.util.logging.Logger
 
-class ClientOrga : NopeEventListener {
+class Client3Orga : NopeEventListener {
     private val username: String
     private val password: String
     private val log: Logger
-    private val logic = ClientLogic()
+    private val logic = Client3Logic()
     private val kotlinClientInterface: KotlinClientInterface
 
 

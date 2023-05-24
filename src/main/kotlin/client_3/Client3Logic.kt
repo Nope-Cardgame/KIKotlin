@@ -3,7 +3,7 @@ package client_3
 import entity.Card
 import entity.CardType
 
-class ClientLogic {
+class Client3Logic {
 
     /**
      * Method to find first matching list of cards to discard
