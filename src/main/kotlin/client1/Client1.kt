@@ -7,6 +7,7 @@ import entity.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import rest.LoginCredentials
+import java.lang.IllegalStateException
 import java.util.logging.FileHandler
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -40,7 +41,7 @@ class Client1 : NopeEventListener {
             const val ACCEPT_INVITATION_AUTOMATICALLY = true // changed for debugging purpose, was false
 
             object DefaultGame {
-                const val ACTION_CARDS_ENABLED = false
+                const val ACTION_CARDS_ENABLED = true
                 const val WILD_CARDS_ENABLED = true
                 const val ONE_MORE_START_CARDS_ENABLED = true
             }
@@ -197,6 +198,8 @@ class Client1 : NopeEventListener {
         if (game.currentPlayer.username == loginCredentials.username) {
             val clientPlayer = game.currentPlayer
 
+            log.info("game: $game")
+
             when (game.state) {
                 GameState.GAME_START -> {
                     // game started
@@ -211,6 +214,8 @@ class Client1 : NopeEventListener {
                         game.discardPile.getOrNull(0) ?: throw Exception("discard pile is empty and game has not ended")
                     val discardableNumberCards = gameLogic.getDiscardableNumberCards(currentDiscardPileCard, clientPlayer.cards)
                     val discardableActionCards = gameLogic.getDiscardableActionCards(currentDiscardPileCard, clientPlayer.cards)
+                    log.info("discardableNumberCards: $discardableNumberCards")
+                    log.info("discardableActionCards: $discardableActionCards")
 
                     when {
                         // check whether this client can discard any set of cards
@@ -219,6 +224,7 @@ class Client1 : NopeEventListener {
                             // TODO implement logic, that discards specific cards for a good reason and not just discard
                             //  the first valid card set
                             kotlinClientInterface.discardCard(discardableNumberCards[0].take(currentDiscardPileCard.value))
+                            log.info(loginCredentials.username + " discarded card: " + discardableNumberCards[0])
                         }
                         // check whether this client can discard any action card
                         discardableActionCards.isNotEmpty() -> {
@@ -233,9 +239,16 @@ class Client1 : NopeEventListener {
                                         nominatedColor = CardColor.BLUE, // static color choice
                                         nominatedAmount = 1 // static amount choice
                                     )
+                                    log.info(loginCredentials.username + " discarded action card: " + discardableActionCards[0])
                                 }
+                                CardType.RESET, CardType.INVISIBLE -> {
+                                    // test call use other actions cards
+                                    kotlinClientInterface.discardCard(cards = listOf(discardableActionCards[0]))
+                                    log.info(loginCredentials.username + " discarded action card: " + discardableActionCards[0])
+                                }
+
                                 else -> {
-                                    TODO("Other action cards are not yet implemented")
+                                    throw IllegalStateException("Card type ${discardableActionCards[0].type} is not implemented for element in discardableActionCards")
                                 }
                             }
                         }
