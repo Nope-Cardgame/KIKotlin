@@ -37,9 +37,11 @@ internal class Client1GameLogic {
         val discardableActionCards = mutableListOf<Card>()
 
         val actionCardsNominate = hand.filter { it.type == CardType.NOMINATE && currentDiscardPileCard.colors.containsAny(it.colors) }
+        val actionCardsInvisible = hand.filter { it.type == CardType.INVISIBLE && currentDiscardPileCard.colors.containsAny(it.colors) }
+        val actionCardsReset = hand.filter { it.type == CardType.RESET }
         discardableActionCards.addAll(actionCardsNominate)
-
-        // TODO add more playable action cards
+        discardableActionCards.addAll(actionCardsInvisible)
+        discardableActionCards.addAll(actionCardsReset)
 
         return discardableActionCards
     }
