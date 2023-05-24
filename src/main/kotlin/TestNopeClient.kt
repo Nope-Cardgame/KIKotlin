@@ -75,6 +75,7 @@ class TestNopeClient(
 
     override fun socketConnectError(error: String?) {
         log.fine("socketConnectError received")
+
     }
 
     override fun socketDisconnected() {
@@ -83,12 +84,14 @@ class TestNopeClient(
 
     override fun disqualifiedPlayer(player: Player, explanation: String) {
         log.fine("disqualifiedPlayer received")
+        log.fine("$player is disqualified because: $explanation")
     }
 
     override fun gameStateUpdate(game: Game) {
         log.fine("gameStateUpdate received")
         // check whether it is the client turn
         if (game.currentPlayer.username == username) {
+
             // take card by default
             kotlinClientInterface.takeCard()
         }
