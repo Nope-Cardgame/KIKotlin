@@ -20,6 +20,9 @@ class Client3Orga : NopeEventListener {
         log = Logger.getLogger("${javaClass.name}/$username")
         kotlinClientInterface = KotlinClientInterface(username, password, this)
     }
+
+
+
     override fun socketConnected() {
         log.fine("socketConnected received")
         println("$username connected")
@@ -42,24 +45,67 @@ class Client3Orga : NopeEventListener {
 
     override fun gameStateUpdate(game: Game) {
         log.fine("gameStateUpdate received")
+        //check if its this clients turn
         if (game.currentPlayer.username == username) {
+
            when(game.state) {
 
                GameState.GAME_START -> TODO()
-               GameState.NOMINATE_FLIPPED -> TODO()
+               GameState.NOMINATE_FLIPPED -> {}//not going to happen
 
                GameState.TURN_START -> {
-                   val discard: List<Card> = logic.checkForDiscard(game.currentPlayer.cards,game.initialTopCard)
+                   //checks if the first card is invisible-special to know on wich card to look at
+                   val relevantBoardCard: Card = if (game.discardPile[0].type == CardType.INVISIBLE) {
+                        game.discardPile[1]
+                   } else {
+                       game.discardPile[0]
+                   }
+                   //checks if there is a discard able set in hand, matching color and amount
+                   var discard: List<Card> = logic.checkForDiscard(game.currentPlayer.cards,relevantBoardCard)
 
+                   //take a card
                    if (discard.isEmpty()) {
                        kotlinClientInterface.takeCard()
                        println("No set to discard, i get a card!")
+                   } else {
+                       //checks for special cards in hand and if they are playable
+                       var gotSpecial: Boolean = false
+                       for(card in game.currentPlayer.cards) {
+                           if (card.type != CardType.NUMBER) {
+                               if (card.type == CardType.RESET) {
+                                   gotSpecial = true
+                                   discard = List<Card>(1) { card }
+                               }
+                               for (color in relevantBoardCard.colors) {
+                                   if (card.colors[0] == color) {
+
+                                       discard = List<Card>(1) { card }
+                                       break
+                                   }
+                               }
+                           }
+                       }
+                       //discards the chosen card('s)
+                       if (gotSpecial) {
+                           if (discard[0].type == CardType.NOMINATE) {
+                               kotlinClientInterface.nominateCard(discard,game.players[1],CardColor.RED,2,"random :)")
+                           }
+                           kotlinClientInterface.discardCard(discard,"i got a special card!")
+                       } else {
+                           kotlinClientInterface.discardCard(discard,"first set to be found")
+                       }
+
                    }
-                   kotlinClientInterface.discardCard(discard,"first set to be found")
+
                }
 
                GameState.CARD_DRAWN -> {
-                   val discard: List<Card> = logic.checkForDiscard(game.currentPlayer.cards,game.initialTopCard)
+                   val discard: List<Card> = if (game.discardPile[0].type == CardType.INVISIBLE) {
+                       logic.checkForDiscard(game.currentPlayer.cards,game.discardPile[1])
+                   } else {
+                       logic.checkForDiscard(game.currentPlayer.cards,game.discardPile[0])
+                   }
+
 
                    if (discard.isEmpty()) {
                        println("NOPE! Still no set to discard :)")
