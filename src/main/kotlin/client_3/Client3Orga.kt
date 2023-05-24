@@ -1,24 +1,60 @@
 package client_3
 import KotlinClientInterface
+import LogConsoleFormatter
 import NopeEventListener
 import entity.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.util.logging.ConsoleHandler
+import java.util.logging.Level
 import java.util.logging.Logger
 
-class Client3Orga : NopeEventListener {
-    private val username: String
-    private val password: String
+class Client3Orga(private val username: String,
+                  password: String,
+    private val usernameToInvite: String? = null) : NopeEventListener {
+//    private val username: String
+//    private val password: String
     private val log: Logger
     private val logic = Client3Logic()
     private val kotlinClientInterface: KotlinClientInterface
+    private var invitedUser: Boolean = false
+
 
 
     init {
-        println("Enter username here: ")
-        username = readln()
-        println("Enter password here: ")
-        password = readln()
+//        println("Enter username here: ")
+//        username = readln()
+//        println("Enter password here: ")
+//        password = readln()
         log = Logger.getLogger("${javaClass.name}/$username")
         kotlinClientInterface = KotlinClientInterface(username, password, this)
+
+        // setup logger
+        val consoleHandler = ConsoleHandler()
+        consoleHandler.level = Level.ALL
+        consoleHandler.formatter = LogConsoleFormatter()
+        log.addHandler(consoleHandler)
+        log.level = Level.ALL
+        log.useParentHandlers = false
+    }
+
+    private suspend fun startGame() {
+        val userConnections = kotlinClientInterface.getUserConnections()
+        // test game with kotlin client players only
+        val playerToInvite = userConnections.first { it.username == usernameToInvite }
+        val clientPlayer = userConnections.first { it.username == username }
+
+        val startGameResult = kotlinClientInterface.startGame(
+            StartGamePostData(
+                noActionCards = true,
+                noWildcards = false,
+                oneMoreStartCards = false,
+                players = listOf(playerToInvite, clientPlayer)
+            )
+        )
+        invitedUser = true
+        log.fine("sent game invite to players: ${startGameResult.players}")
     }
 
 
@@ -26,11 +62,23 @@ class Client3Orga : NopeEventListener {
     override fun socketConnected() {
         log.fine("socketConnected received")
         println("$username connected")
+
+        if (!invitedUser && usernameToInvite != null) {
+            runBlocking {
+                launch {
+                    // wait until the other client is connected
+                    delay(3000)
+                    // Let client start the game. This will cause client1 to invite the player with name usernameToInvite
+                    startGame()
+                }
+            }
+        }
     }
 
     override fun socketConnectError(error: String?) {
         log.fine("socketConnectError received")
         println("$username socket connection error: $error")
+        kotlinClientInterface.disconnectSocket()
     }
 
     override fun socketDisconnected() {
@@ -62,6 +110,10 @@ class Client3Orga : NopeEventListener {
                    }
                    //checks if there is a discard able set in hand, matching color and amount
                    var discard: List<Card> = logic.checkForDiscard(game.currentPlayer.cards,relevantBoardCard)
+                   println("---------to discard-------------")
+                   for(card in discard) {
+                       println(card.name)
+                   }
 
                    //take a card
                    if (discard.isEmpty()) {
@@ -100,17 +152,32 @@ class Client3Orga : NopeEventListener {
                }
 
                GameState.CARD_DRAWN -> {
-                   val discard: List<Card> = if (game.discardPile[0].type == CardType.INVISIBLE) {
-                       logic.checkForDiscard(game.currentPlayer.cards,game.discardPile[1])
+//                   val discard: List<Card> = if (game.discardPile[0].type == CardType.INVISIBLE) {
+//                       logic.checkForDiscard(game.currentPlayer.cards,game.discardPile[1])
+//                   } else {
+//                       logic.checkForDiscard(game.currentPlayer.cards,game.discardPile[0])
+//                   }
+                   //checks if the first card is invisible-special to know on wich card to look at
+                   val relevantBoardCard: Card = if (game.discardPile[0].type == CardType.INVISIBLE) {
+                       game.discardPile[1]
                    } else {
-                       logic.checkForDiscard(game.currentPlayer.cards,game.discardPile[0])
+                       game.discardPile[0]
+                   }
+                   //checks if there is a discard able set in hand, matching color and amount
+                   var discard: List<Card> = logic.checkForDiscard(game.currentPlayer.cards,relevantBoardCard)
+                   println("---------to discard-------------")
+                   for(card in discard) {
+                       println(card.name)
                    }
 
 
                    if (discard.isEmpty()) {
                        println("NOPE! Still no set to discard :)")
+                       kotlinClientInterface.sayNope()
+                   } else {
+                       kotlinClientInterface.discardCard(discard,"first set to be found")
                    }
-                   kotlinClientInterface.discardCard(discard,"first set to be found")
+
                }
                GameState.CANCELLED -> TODO()
                GameState.GAME_END -> TODO()

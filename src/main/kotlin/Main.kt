@@ -1,3 +1,5 @@
+import client_3.Client3Orga
+
 fun main() {
     val username = "kotlin"
     val password = "kotlin"
@@ -5,11 +7,22 @@ fun main() {
     val password2 = "kotlin2"
 
     // instantiate clients
-    val testNopeClient2 = TestNopeClient(
+//    val testNopeClient2 = TestNopeClient(
+//        username = username2,
+//        password = password2
+//    )
+//    val testNopeClient1 = TestNopeClient(
+//        username = username,
+//        password = password,
+//        usernameToInvite = username2
+//    )
+
+    val Client3Orga = Client3Orga(
         username = username2,
         password = password2
     )
-    val testNopeClient1 = TestNopeClient(
+
+    val client3Orga = Client3Orga(
         username = username,
         password = password,
         usernameToInvite = username2
