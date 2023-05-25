@@ -12,15 +12,33 @@ class Client3Logic {
      *          If list is empty not enough cards are available
      */
     fun checkForDiscard(hand: List<Card>, discardPileCard: Card): List<Card> {
+        //console print to track game
         println("++ discard Pile: ${discardPileCard.value} ${discardPileCard.name} ++")
-        var iter: Int = 0
-        for (card in hand) {
-            println("Card$iter: nr. ${card.value} color ${card.name}")
-            iter++
+        for ((index, card) in hand.withIndex()) {
+            println("Card$index: nr. ${card.value} color ${card.name}")
         }
-        iter = 0
+
         if (discardPileCard.type != CardType.NUMBER) {
-            return listOf()
+            when(discardPileCard.type) {
+                CardType.NUMBER -> {
+                    println("shouldn't be here(check for discard->notNumber->Number)")
+                }
+                CardType.NOMINATE -> TODO()
+                //Liegt eine Auswahlkarte zu Beginn des Spiels als erste offene Karte aus, führst
+                //du als Startspieler die Aktion aus, als ob du die Karte selbst abgelegt hast
+                //(Mitspieler bestimmen etc.).
+                CardType.RESET -> {return listOf<Card>(hand[0])}
+                CardType.INVISIBLE -> {
+                    //checks if there is a card in hand in this color to discard
+                    for (card in hand) {
+                        for (color in card.colors) {
+                            if (color == discardPileCard.colors[0]) {
+                                return listOf<Card>(card)
+                            }
+                        }
+                    }
+                }
+            }
         }
         //check hand for each color of discardPileCard
         for (color in discardPileCard.colors) {
@@ -47,6 +65,15 @@ class Client3Logic {
             }
         }
         return listOf<Card>()
+    }
+
+    fun checkInvisible(discardPileCard: List<Card>): Card {
+        for((index, card) in discardPileCard.withIndex()) {
+            if (card.type != CardType.INVISIBLE) {
+                return card
+            }
+        }
+        return discardPileCard[0]
     }
 
 

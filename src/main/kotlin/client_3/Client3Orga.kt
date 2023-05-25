@@ -102,11 +102,7 @@ class Client3Orga(private val username: String, password: String, private val us
 
                GameState.TURN_START -> {
                    //checks if the first card is invisible-special to know on wich card to look at
-                   val relevantBoardCard: Card = if (game.discardPile[0].type == CardType.INVISIBLE) {
-                        game.discardPile[1]
-                   } else {
-                       game.discardPile[0]
-                   }
+                   val relevantBoardCard: Card = logic.checkInvisible(game.discardPile)
                    //checks if there is a discard able set in hand, matching color and amount
                    var discard: List<Card> = logic.checkForDiscard(game.currentPlayer.cards,relevantBoardCard)
                    println("---------to discard-------------")
