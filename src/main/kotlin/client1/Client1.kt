@@ -161,7 +161,7 @@ class Client1 : NopeEventListener {
                 players = usersToInvite.plus(clientPlayer)
             )
         )
-        log.fine("sent game invite to socket ids: ${startGameResult.players.joinToString { it.socketId }}")
+        //log.fine("sent game invite to socket ids: ${startGameResult.players.joinToString { it.socketId }}")
     }
 
     /**** Overridden Websocket Events ****/
@@ -205,14 +205,39 @@ class Client1 : NopeEventListener {
                     // game started
                 }
                 GameState.NOMINATE_FLIPPED -> {
-                    // nominate flipped
+
                 }
                 GameState.CARD_DRAWN,
                 GameState.TURN_START -> {
                     // get current discard pile card (current card has index 0)
                     val currentDiscardPileCard =
                         game.discardPile.getOrNull(0) ?: throw Exception("discard pile is empty and game has not ended")
-                    val discardableNumberCards = gameLogic.getDiscardableNumberCards(currentDiscardPileCard, clientPlayer.cards)
+
+                    // ignore state update when current card is of type nominate, as the nominate card is handled in game state GameState.NOMINATE_FLIPPED
+                    if (currentDiscardPileCard.type == CardType.NOMINATE) {
+
+                        log.info("nominate flipped handled internal (color: ${game.lastNominateColor}, amount: ${game.lastNominateAmount})")
+                        // nominate flipped
+                        val discardableNumberCards = gameLogic.findDiscardableCardSet(listOf(game.lastNominateColor), game.lastNominateAmount, clientPlayer.cards)
+                        if (discardableNumberCards.isNotEmpty()) {
+                            kotlinClientInterface.discardCard(discardableNumberCards[0])
+
+                            log.info("discarded after nominate:" + discardableNumberCards[0])
+                        } else if(game.state == GameState.TURN_START) {
+                            kotlinClientInterface.takeCard()
+
+                            log.info("draw card after nominate")
+                        } else {
+                            kotlinClientInterface.sayNope()
+
+                            log.info("said nope after nominate")
+                        }
+
+                        return
+
+                    }
+
+                    val discardableNumberCards = gameLogic.getDiscardableNumberCards(game.discardPile, clientPlayer.cards)
                     val discardableActionCards = gameLogic.getDiscardableActionCards(currentDiscardPileCard, clientPlayer.cards)
                     log.info("discardableNumberCards: $discardableNumberCards")
                     log.info("discardableActionCards: $discardableActionCards")
@@ -221,9 +246,7 @@ class Client1 : NopeEventListener {
                         // check whether this client can discard any set of cards
                         discardableNumberCards.isNotEmpty() -> {
                             // discard first valid set
-                            // TODO implement logic, that discards specific cards for a good reason and not just discard
-                            //  the first valid card set
-                            kotlinClientInterface.discardCard(discardableNumberCards[0].take(currentDiscardPileCard.value))
+                            kotlinClientInterface.discardCard(discardableNumberCards[0])
                             log.info(loginCredentials.username + " discarded card: " + discardableNumberCards[0])
                         }
                         // check whether this client can discard any action card
@@ -236,7 +259,7 @@ class Client1 : NopeEventListener {
                                     kotlinClientInterface.nominateCard(
                                         cards = listOf(discardableActionCards[0]),
                                         nominatedPlayer = game.players.first { it.socketId != clientPlayer.socketId }, // find first non-client player
-                                        nominatedColor = CardColor.BLUE, // static color choice
+                                        nominatedColor = CardColor.RED, // static color choice
                                         nominatedAmount = 1 // static amount choice
                                     )
                                     log.info(loginCredentials.username + " discarded action card: " + discardableActionCards[0])
@@ -257,7 +280,7 @@ class Client1 : NopeEventListener {
                             if (game.state == GameState.CARD_DRAWN) {
                                 // this client drew a card in the previous action, say nope, because the client can not draw any card
                                 kotlinClientInterface.sayNope()
-                            } else if (game.state == GameState.TURN_START) {
+                            } else {
                                 // this client did not draw a card last round and can not discard any set of cards
                                 kotlinClientInterface.takeCard()
                             }
