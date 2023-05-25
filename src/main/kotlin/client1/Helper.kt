@@ -1,6 +1,7 @@
 package client1
 
 import entity.Player
+import entity.TournamentParticipant
 
 
 /**
@@ -16,6 +17,9 @@ fun Boolean.toConsoleStringRepresentation() =
 
 fun Player.getEndGameStringFormat() =
     "$username (SocketID: $socketId, disqualified: $disqualified, cards: $cardAmount, ranking: $ranking)"
+
+fun TournamentParticipant.getEndGameStringFormat() =
+    "$username (SocketID: $socketId, disqualified: $disqualified, score: ${this.score}, ranking: $ranking)"
 
 /**
  * Checks whether this list contains any of the given elements

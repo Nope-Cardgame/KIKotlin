@@ -32,6 +32,8 @@ class Client1 : NopeEventListener {
         val LOG_LEVEL: Level = Level.ALL
 
         object Config {
+            const val ASK_TO_INVITE_ON_CONNECT = true
+            const val ASK_TO_INVITE_AFTER_GAME_FINISHED = true
             const val ACCEPT_GAME_INVITATION_DEFAULT = true
             const val ACCEPT_TOURNAMENT_INVITATION_DEFAULT = true
 
@@ -161,7 +163,9 @@ class Client1 : NopeEventListener {
                 players = usersToInvite.plus(clientPlayer)
             )
         )
-        //log.fine("sent game invite to socket ids: ${startGameResult.players.joinToString { it.socketId }}")
+
+        println("Players invited (gameId: ${startGameResult.players.joinToString { it.socketId }})")
+        log.fine("sent game invite to socket ids: ${startGameResult.players.joinToString { it.socketId }}")
     }
 
     /**** Overridden Websocket Events ****/
@@ -169,9 +173,11 @@ class Client1 : NopeEventListener {
         log.fine("socketConnected received")
         println("Client connected")
 
-        runBlocking {
-            launch {
-                askToInviteUsers()
+        if (Config.ASK_TO_INVITE_ON_CONNECT) {
+            runBlocking {
+                launch {
+                    askToInviteUsers()
+                }
             }
         }
     }
@@ -203,6 +209,7 @@ class Client1 : NopeEventListener {
             when (game.state) {
                 GameState.GAME_START -> {
                     // game started
+                    println("Game started (gameId: ${game.id}, startPlayer: ${game.currentPlayer.username})")
                 }
                 GameState.NOMINATE_FLIPPED -> {
 
@@ -216,9 +223,15 @@ class Client1 : NopeEventListener {
                     // ignore state update when current card is of type nominate, as the nominate card is handled in game state GameState.NOMINATE_FLIPPED
                     if (currentDiscardPileCard.type == CardType.NOMINATE) {
 
-                        log.info("nominate flipped handled internal (color: ${game.lastNominateColor}, amount: ${game.lastNominateAmount})")
+                        log.info("nominate flipped handled (color: ${game.lastNominateColor}, amount: ${game.lastNominateAmount})")
                         // nominate flipped
-                        val discardableNumberCards = gameLogic.findDiscardableCardSet(listOf(game.lastNominateColor), game.lastNominateAmount, clientPlayer.cards)
+                        // if this nominate card is a "multi" nominate card (all colors)
+                        val colors = if (currentDiscardPileCard.colors.containsAll(CardColor.values().toList())){
+                            listOf(game.lastNominateColor)
+                        } else {
+                            currentDiscardPileCard.colors
+                        }
+                        val discardableNumberCards = gameLogic.findDiscardableCardSet(colors, game.lastNominateAmount, clientPlayer.cards)
                         if (discardableNumberCards.isNotEmpty()) {
                             kotlinClientInterface.discardCard(discardableNumberCards[0])
 
@@ -243,12 +256,6 @@ class Client1 : NopeEventListener {
                     log.info("discardableActionCards: $discardableActionCards")
 
                     when {
-                        // check whether this client can discard any set of cards
-                        discardableNumberCards.isNotEmpty() -> {
-                            // discard first valid set
-                            kotlinClientInterface.discardCard(discardableNumberCards[0])
-                            log.info(loginCredentials.username + " discarded card: " + discardableNumberCards[0])
-                        }
                         // check whether this client can discard any action card
                         discardableActionCards.isNotEmpty() -> {
                             // discard first valid set
@@ -274,6 +281,12 @@ class Client1 : NopeEventListener {
                                     throw IllegalStateException("Card type ${discardableActionCards[0].type} is not implemented for element in discardableActionCards")
                                 }
                             }
+                        }
+                        // check whether this client can discard any set of cards
+                        discardableNumberCards.isNotEmpty() -> {
+                            // discard first valid set
+                            kotlinClientInterface.discardCard(discardableNumberCards[0])
+                            log.info(loginCredentials.username + " discarded card: " + discardableNumberCards[0])
                         }
                         else -> {
                             // check whether this client took a card from the discard pile in the previous action
@@ -313,23 +326,31 @@ class Client1 : NopeEventListener {
         // print all players sorted by their ranking
         val playerListResult =
             game.players.sortedBy { it.ranking }.joinToString(separator = "\n") { it.getEndGameStringFormat() }
-        println("Game end (GameID: ${game.id}). Result ranking:")
+        println("Game end (gameId: ${game.id}). Result ranking:")
         println(playerListResult)
 
-        // allow user to start a new game after one game finished
-        runBlocking {
-            launch {
-                askToInviteUsers()
+        if (Config.ASK_TO_INVITE_AFTER_GAME_FINISHED) {
+            runBlocking {
+                launch {
+                    //askToInviteUsers()
+                }
             }
         }
     }
 
     override fun tournamentEnd(tournament: Tournament) {
-        log.fine("tournamentEnd received")
+        log.fine("tournamentEnd received (tournamentId: ${tournament.id}, participants: ${tournament.participants})")
+
+        // print all players sorted by their ranking
+        val playerListResult =
+            tournament.participants.sortedBy { it.ranking }.joinToString(separator = "\n") { it.getEndGameStringFormat() }
+        println("Tournament end (tournamentId: ${tournament.id}). Result ranking:")
+        println(playerListResult)
     }
 
     override fun gameInvite(game: Game): Boolean {
         log.fine("gameInvite received")
+        println("Game invitation received (gameId: ${game.id})")
 
         // automatically accept if defined in config
         if (Config.ACCEPT_INVITATION_AUTOMATICALLY) return true
@@ -342,6 +363,7 @@ class Client1 : NopeEventListener {
 
     override fun tournamentInvite(tournament: Tournament): Boolean {
         log.fine("tournamentInvite invoked(tournament: $tournament)")
+        println("Tournament invitation received (tournamentId: ${tournament.id})")
 
         // automatically accept if defined in config
         if (Config.ACCEPT_INVITATION_AUTOMATICALLY) return true
