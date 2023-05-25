@@ -10,9 +10,8 @@ import java.util.logging.ConsoleHandler
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class Client3Orga(private val username: String,
-                  password: String,
-    private val usernameToInvite: String? = null) : NopeEventListener {
+class Client3Orga(private val username: String, password: String, private val usernameToInvite: String? = null
+                    ) : NopeEventListener {
 //    private val username: String
 //    private val password: String
     private val log: Logger
@@ -152,11 +151,6 @@ class Client3Orga(private val username: String,
                }
 
                GameState.CARD_DRAWN -> {
-//                   val discard: List<Card> = if (game.discardPile[0].type == CardType.INVISIBLE) {
-//                       logic.checkForDiscard(game.currentPlayer.cards,game.discardPile[1])
-//                   } else {
-//                       logic.checkForDiscard(game.currentPlayer.cards,game.discardPile[0])
-//                   }
                    //checks if the first card is invisible-special to know on wich card to look at
                    val relevantBoardCard: Card = if (game.discardPile[0].type == CardType.INVISIBLE) {
                        game.discardPile[1]
@@ -198,23 +192,24 @@ class Client3Orga(private val username: String,
     override fun gameEnd(game: Game) {
         log.fine("gameEnd received")
         println("the Game ended")
+
     }
 
     override fun tournamentEnd(tournament: Tournament) {
         log.fine("tournamentEnd received")
         println("the tournament is over")
-    }
 
+    }
     override fun gameInvite(game: Game): Boolean {
         log.fine("gameInvite received")
-        println("game invite accepted")
+        println("game invite received")
         // accept all invitations by default
         return true
     }
 
     override fun tournamentInvite(tournament: Tournament): Boolean {
         log.fine("tournamentInvite invoked(tournament: $tournament)")
-        println("tournament invite accepted")
+        println("tournament invite received")
         // accept all invitations by default
         return true
     }

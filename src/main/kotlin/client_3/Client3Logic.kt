@@ -12,10 +12,13 @@ class Client3Logic {
      *          If list is empty not enough cards are available
      */
     fun checkForDiscard(hand: List<Card>, discardPileCard: Card): List<Card> {
-        println("discard: ${discardPileCard.value} ${discardPileCard.name}")
+        println("++ discard Pile: ${discardPileCard.value} ${discardPileCard.name} ++")
+        var iter: Int = 0
         for (card in hand) {
-            println("nr. ${card.value} color ${card.name}")
+            println("Card$iter: nr. ${card.value} color ${card.name}")
+            iter++
         }
+        iter = 0
         if (discardPileCard.type != CardType.NUMBER) {
             return listOf()
         }
