@@ -3,6 +3,7 @@ import KotlinClientInterface
 import LogConsoleFormatter
 import NopeEventListener
 import entity.*
+import entity.action.GameAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -91,20 +92,30 @@ class Client3Orga(private val username: String, password: String, private val us
     }
 
     override fun gameStateUpdate(game: Game) {
+        val nextPlayer: Player = game.players.first { it.socketId != game.currentPlayer.socketId && (!it.disqualified)}
         log.fine("gameStateUpdate received")
         //check if its this clients turn
         if (game.currentPlayer.username == username) {
 
            when(game.state) {
 
-               GameState.GAME_START -> TODO()
-               GameState.NOMINATE_FLIPPED -> {}//not going to happen
+               GameState.GAME_START -> {println("Game has started.")}
+               GameState.NOMINATE_FLIPPED -> { //game start with nominated flipped
+                   val col = game.discardPile[0].colors[0]
+                   kotlinClientInterface.nominateCard(
+                       listOf(),
+                       nextPlayer,
+                       col,
+                       2,
+                       "Nominated played"
+                   )
+               }
 
                GameState.TURN_START -> {
                    //checks if the first card is invisible-special to know on wich card to look at
                    val relevantBoardCard: Card = logic.checkInvisible(game.discardPile)
                    //checks if there is a discard able set in hand, matching color and amount
-                   var discard: List<Card> = logic.checkForDiscard(game.currentPlayer.cards,relevantBoardCard)
+                   var discard: List<Card> = logic.checkForDiscard(game.currentPlayer.cards,relevantBoardCard, game)
                    println("---------to discard-------------")
                    for(card in discard) {
                        println(card.name)
@@ -135,7 +146,13 @@ class Client3Orga(private val username: String, password: String, private val us
                        //discards the chosen card('s)
                        if (gotSpecial) {
                            if (discard[0].type == CardType.NOMINATE) {
-                               kotlinClientInterface.nominateCard(discard,game.players[1],CardColor.RED,2,"random :)")
+                               kotlinClientInterface.nominateCard(
+                                   discard,
+                                   nextPlayer,
+                                   CardColor.RED,
+                                   2,
+                                   "random :)"
+                               )
                            }
                            kotlinClientInterface.discardCard(discard,"i got a special card!")
                        } else {
@@ -154,22 +171,33 @@ class Client3Orga(private val username: String, password: String, private val us
                        game.discardPile[0]
                    }
                    //checks if there is a discard able set in hand, matching color and amount
-                   var discard: List<Card> = logic.checkForDiscard(game.currentPlayer.cards,relevantBoardCard)
+                   var discard: List<Card> = logic.checkForDiscard(game.currentPlayer.cards,relevantBoardCard, game)
                    println("---------to discard-------------")
                    for(card in discard) {
                        println(card.name)
                    }
-
-
+                   //if no fitting set was found
                    if (discard.isEmpty()) {
-                       println("NOPE! Still no set to discard :)")
-                       kotlinClientInterface.sayNope()
+                       //if the turn was a nominate
+                       if (game.lastAction.type == GameActionType.NOMINATE) {
+                           kotlinClientInterface.nominateCard(
+                               listOf(game.discardPile[0]),
+                               nextPlayer,
+                               game.lastNominateColor,
+                               game.lastNominateAmount,
+                               "i can't next player plz"
+                               )
+                           println("NOPE! Still no set to discard :)")
+                       } else {
+                           println("NOPE! Still no set to discard :)")
+                           kotlinClientInterface.sayNope()
+                       }
                    } else {
                        kotlinClientInterface.discardCard(discard,"first set to be found")
                    }
 
                }
-               GameState.CANCELLED -> TODO()
+               GameState.CANCELLED -> {println("Game invite has been canceled..")}
                GameState.GAME_END -> TODO()
            }
         }
