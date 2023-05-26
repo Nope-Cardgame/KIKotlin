@@ -2,6 +2,7 @@ package client_3
 
 import entity.Card
 import entity.CardType
+import entity.Game
 
 class Client3Logic {
 
@@ -11,7 +12,7 @@ class Client3Logic {
      * @return returns a list with the cards to discard from the hand.
      *          If list is empty not enough cards are available
      */
-    fun checkForDiscard(hand: List<Card>, discardPileCard: Card): List<Card> {
+    fun checkForDiscard(hand: List<Card>, discardPileCard: Card, game: Game): List<Card> {
         //console print to track game
         println("++ discard Pile: ${discardPileCard.value} ${discardPileCard.name} ++")
         for ((index, card) in hand.withIndex()) {
@@ -23,10 +24,7 @@ class Client3Logic {
                 CardType.NUMBER -> {
                     println("shouldn't be here(check for discard->notNumber->Number)")
                 }
-                CardType.NOMINATE -> TODO()
-                //Liegt eine Auswahlkarte zu Beginn des Spiels als erste offene Karte aus, führst
-                //du als Startspieler die Aktion aus, als ob du die Karte selbst abgelegt hast
-                //(Mitspieler bestimmen etc.).
+                CardType.NOMINATE -> {return checkForDiscard(hand, Card(CardType.NUMBER,game.lastNominateAmount, listOf(game.lastNominateColor), "Special NOMINATE"), game)}
                 CardType.RESET -> {return listOf<Card>(hand[0])}
                 CardType.INVISIBLE -> {
                     //checks if there is a card in hand in this color to discard
