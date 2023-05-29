@@ -152,13 +152,13 @@ class Client1 : NopeEventListener {
         usersToInvite: List<Player>,
         clientPlayer: Player,
         noActionCards: Boolean,
-        noWildcards: Boolean,
+        noWildCards: Boolean,
         oneMoreStartCards: Boolean,
     ) {
         val startGameResult = kotlinClientInterface.startGame(
             StartGamePostData(
                 noActionCards = noActionCards,
-                noWildcards = noWildcards,
+                noWildCards = noWildCards,
                 oneMoreStartCards = oneMoreStartCards,
                 players = usersToInvite.plus(clientPlayer)
             )
