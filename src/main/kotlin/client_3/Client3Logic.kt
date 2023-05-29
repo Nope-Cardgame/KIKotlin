@@ -1,6 +1,7 @@
 package client_3
 
 import entity.Card
+import entity.CardColor
 import entity.CardType
 import entity.Game
 
@@ -27,6 +28,7 @@ class Client3Logic {
                 CardType.NOMINATE -> {return checkForDiscard(hand, Card(CardType.NUMBER,game.lastNominateAmount, listOf(game.lastNominateColor), "Special NOMINATE"), game)}
                 CardType.RESET -> {return listOf<Card>(hand[0])}
                 CardType.INVISIBLE -> {
+                    //** can only happen, if it is the startCard **
                     //checks if there is a card in hand in this color to discard
                     for (card in hand) {
                         for (color in card.colors) {
@@ -58,7 +60,8 @@ class Client3Logic {
                     }
                 }
             }
-            if (counter >= discardPileCard.value) {
+            if (counter >= discardPileCard.value!!) {
+                discardCards.sortByDescending {it.colors.size}
                 return discardCards.subList(0, discardPileCard.value)
             }
         }
@@ -66,7 +69,7 @@ class Client3Logic {
     }
 
     fun checkInvisible(discardPileCard: List<Card>): Card {
-        for((index, card) in discardPileCard.withIndex()) {
+        for(card in discardPileCard) {
             if (card.type != CardType.INVISIBLE) {
                 return card
             }
