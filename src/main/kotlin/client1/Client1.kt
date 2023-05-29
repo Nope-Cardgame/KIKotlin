@@ -212,7 +212,16 @@ class Client1 : NopeEventListener {
                     println("Game started (gameId: ${game.id}, startPlayer: ${game.currentPlayer.username})")
                 }
                 GameState.NOMINATE_FLIPPED -> {
-
+                    // game started and the first card on the discard pile is a nominate action card
+                    // this allows the current player to nominate a player as if he played this nominate card
+                    val canChooseColor = game.discardPile[0].hasAllColors()
+                    kotlinClientInterface.nominateCard(
+                        cards = emptyList(),
+                        // TODO bei suchen von nominatedPlayer disqualified == false beachten, auch bei anderen checks
+                        nominatedPlayer = game.players.first { it.socketId != clientPlayer.socketId && !it.disqualified }, // find first non-client player
+                        nominatedColor = CardColor.RED, // static color choice
+                        nominatedAmount = 1 // static amount choice
+                    )
                 }
                 GameState.CARD_DRAWN,
                 GameState.TURN_START -> {
@@ -226,7 +235,7 @@ class Client1 : NopeEventListener {
                         log.info("nominate flipped handled (color: ${game.lastNominateColor}, amount: ${game.lastNominateAmount})")
                         // nominate flipped
                         // if this nominate card is a "multi" nominate card (all colors)
-                        val colors = if (currentDiscardPileCard.colors.containsAll(CardColor.values().toList())){
+                        val colors = if (currentDiscardPileCard.hasAllColors()){
                             listOf(game.lastNominateColor)
                         } else {
                             currentDiscardPileCard.colors
@@ -265,7 +274,8 @@ class Client1 : NopeEventListener {
                                     // test call use nominate card
                                     kotlinClientInterface.nominateCard(
                                         cards = listOf(discardableActionCards[0]),
-                                        nominatedPlayer = game.players.first { it.socketId != clientPlayer.socketId }, // find first non-client player
+                                        // TODO bei suchen von nominatedPlayer disqualified == false beachten, auch bei anderen checks
+                                        nominatedPlayer = game.players.first { it.socketId != clientPlayer.socketId && !it.disqualified }, // find first non-client player
                                         nominatedColor = CardColor.RED, // static color choice
                                         nominatedAmount = 1 // static amount choice
                                     )

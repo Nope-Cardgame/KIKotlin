@@ -1,5 +1,7 @@
 package client1
 
+import entity.Card
+import entity.CardColor
 import entity.Player
 import entity.TournamentParticipant
 
@@ -28,4 +30,10 @@ fun TournamentParticipant.getEndGameStringFormat() =
 fun <T> List<T>.containsAny(elements: List<T>): Boolean {
     return !none { elements.contains(it) }
 }
+
+/**
+ * @return true, if this card is colored in all possible card colors (this condition is true for every wildcard or
+ * multicolor-nominate-card)
+ * */
+fun Card.hasAllColors() = this.colors.containsAll(CardColor.values().toList())
  
