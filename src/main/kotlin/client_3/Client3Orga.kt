@@ -48,7 +48,7 @@ class Client3Orga(private val username: String, password: String, private val us
         val startGameResult = kotlinClientInterface.startGame(
             StartGamePostData(
                 noActionCards = false,
-                noWildcards = false,
+                noWildCards = false,
                 oneMoreStartCards = false,
                 players = listOf(playerToInvite, clientPlayer)
             )
@@ -153,14 +153,14 @@ class Client3Orga(private val username: String, password: String, private val us
 
     private fun discardChosenOnes(game: Game, disc: List<Card>, relevantBoardCard: Card, nextPlayer: Player) {
         var discard: List<Card> = disc
-
+        val boardCol = if (relevantBoardCard.type == CardType.NOMINATE && relevantBoardCard.colors.size > 1) {listOf(game.lastNominateColor)} else {relevantBoardCard.colors}
         //checks for special cards in hand and if they are playable (uses last special card)
         for(card in game.currentPlayer.cards) {
             when (card.type) {
                 CardType.NUMBER -> {
                 }
                 CardType.NOMINATE -> {
-                    for (col in relevantBoardCard.colors) {
+                    for (col in boardCol) {
                         var color: CardColor = col
                         if (game.lastAction.type == GameActionType.NOMINATE) {
                             color = game.lastNominateColor

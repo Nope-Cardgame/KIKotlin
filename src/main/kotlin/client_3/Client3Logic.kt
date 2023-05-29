@@ -25,7 +25,12 @@ class Client3Logic {
                 CardType.NUMBER -> {
                     println("shouldn't be here(check for discard->notNumber->Number)")
                 }
-                CardType.NOMINATE -> {return checkForDiscard(hand, Card(CardType.NUMBER,game.lastNominateAmount, listOf(game.lastNominateColor), "Special NOMINATE"), game)}
+                CardType.NOMINATE -> {
+                   var col: List<CardColor> = discardPileCard.colors
+                    if (discardPileCard.colors.size > 1) {
+                        col = listOf(game.lastNominateColor)
+                    }
+                    return checkForDiscard(hand, Card(CardType.NUMBER,game.lastNominateAmount,col , "Special NOMINATE"), game)}
                 CardType.RESET -> {return listOf<Card>(hand[0])}
                 CardType.INVISIBLE -> {
                     //** can only happen, if it is the startCard **
