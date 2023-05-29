@@ -33,7 +33,7 @@ class Client1 : NopeEventListener {
 
         object Config {
             const val ASK_TO_INVITE_ON_CONNECT = true
-            const val ASK_TO_INVITE_AFTER_GAME_FINISHED = true
+            const val ASK_TO_INVITE_AFTER_GAME_FINISHED = false
             const val ACCEPT_GAME_INVITATION_DEFAULT = true
             const val ACCEPT_TOURNAMENT_INVITATION_DEFAULT = true
 
@@ -135,7 +135,7 @@ class Client1 : NopeEventListener {
                 },
                 clientPlayer = connectedUsers.first { it.socketId == kotlinClientInterface.getClientSocketID() },
                 noActionCards = !actionCardsEnabled,
-                noWildcards = !wildCardsEnabled,
+                noWildCards = !wildCardsEnabled,
                 oneMoreStartCards = oneMoreStartCardsEnabled,
             )
         }
@@ -152,13 +152,13 @@ class Client1 : NopeEventListener {
         usersToInvite: List<Player>,
         clientPlayer: Player,
         noActionCards: Boolean,
-        noWildcards: Boolean,
+        noWildCards: Boolean,
         oneMoreStartCards: Boolean,
     ) {
         val startGameResult = kotlinClientInterface.startGame(
             StartGamePostData(
                 noActionCards = noActionCards,
-                noWildcards = noWildcards,
+                noWildCards = noWildCards,
                 oneMoreStartCards = oneMoreStartCards,
                 players = usersToInvite.plus(clientPlayer)
             )
@@ -342,7 +342,7 @@ class Client1 : NopeEventListener {
         if (Config.ASK_TO_INVITE_AFTER_GAME_FINISHED) {
             runBlocking {
                 launch {
-                    //askToInviteUsers()
+                    askToInviteUsers()
                 }
             }
         }

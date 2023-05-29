@@ -5,5 +5,6 @@ package entity
  */
 data class TournamentMode(
     val name: String,
-    val numberOfRounds: Int
+    val numberOfRounds: Int,
+    val pointsPerGameWin: Boolean
 )

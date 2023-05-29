@@ -5,7 +5,7 @@ Die Schnittstelle ist folgendermaßen strukturiert:
 1. Package `entity`:
     - enthält alle Objekt-Model Klassen, die benötigt werden, um die JSON Daten von der REST- und Websocket-Schnittstelle zu parsen.
     - Objekte werden dann von den Clients als Datenstrukturen verwendet, um das Spiel zu analysieren und valide Züge zu spielen
-    - Unterpaket action enthält die Entitäten, die zum Spielen von Aktionen
+    - Unterpaket action enthält die Entitäten, die zum Spielen von Aktionen benötigt werden
 2. Package `rest`:
     - enthält Klassen, die für die REST Schnittstelle benötigt werden
 3. `Constants`: Enthält String-Konstanten, die für die Verbindung zum Server und für die Websocket-Aktionen benötigt werden
