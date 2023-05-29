@@ -32,8 +32,8 @@ class Client1 : NopeEventListener {
         val LOG_LEVEL: Level = Level.ALL
 
         object Config {
-            const val ASK_TO_INVITE_ON_CONNECT = true
-            const val ASK_TO_INVITE_AFTER_GAME_FINISHED = true
+            const val ASK_TO_INVITE_ON_CONNECT = false
+            const val ASK_TO_INVITE_AFTER_GAME_FINISHED = false
             const val ACCEPT_GAME_INVITATION_DEFAULT = true
             const val ACCEPT_TOURNAMENT_INVITATION_DEFAULT = true
 
@@ -332,7 +332,7 @@ class Client1 : NopeEventListener {
         if (Config.ASK_TO_INVITE_AFTER_GAME_FINISHED) {
             runBlocking {
                 launch {
-                    //askToInviteUsers()
+                    askToInviteUsers()
                 }
             }
         }
