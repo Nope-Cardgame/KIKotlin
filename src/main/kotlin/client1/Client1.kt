@@ -146,7 +146,7 @@ class Client1 : NopeEventListener {
                         invitationTimeout = Config.DefaultGame.INVITATION_TIMEOUT,
                         startWithRejection = Config.DefaultGame.START_WITH_REJECTION,
                         sendGameInvite = Config.DefaultGame.TOURNAMENT_SEND_GAME_INVITE,
-                        participants = usersToInvite.plus(connectedUsers.first { it.socketId == kotlinClientInterface.getClientSocketID() })
+                        participants = usersToInvite.plus(clientPlayer)
                     )
                 )
 
