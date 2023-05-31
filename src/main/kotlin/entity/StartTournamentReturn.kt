@@ -6,5 +6,12 @@ package entity
  */
 data class StartTournamentPostData(
     val mode: TournamentMode,
+    val noActionCards: Boolean,
+    val noWildCards: Boolean,
+    val oneMoreStartCards: Boolean,
+    val actionTimeout: Int, // 1-120 seconds
+    val invitationTimeout: Int, // 1-600 seconds
+    val startWithRejection: Boolean,
+    val sendGameInvite: Boolean,
     val participants: List<Player>
 )

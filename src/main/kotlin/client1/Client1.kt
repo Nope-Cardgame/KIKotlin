@@ -159,6 +159,9 @@ class Client1 : NopeEventListener {
                 noActionCards = noActionCards,
                 noWildCards = noWildCards,
                 oneMoreStartCards = oneMoreStartCards,
+                actionTimeout = 10,
+                invitationTimeout = 10,
+                startWithRejection = false,
                 players = usersToInvite.plus(clientPlayer)
             )
         )
