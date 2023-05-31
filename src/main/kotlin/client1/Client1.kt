@@ -31,7 +31,8 @@ class Client1 : NopeEventListener {
         val LOG_LEVEL: Level = Level.ALL
 
         object Config {
-            const val ASK_TO_INVITE_ON_CONNECT = false
+            const val START_TOURNAMENT = true // determines, whether a tournament should be started instead of a single game
+            const val ASK_TO_INVITE_ON_CONNECT = true
             const val ASK_TO_INVITE_AFTER_GAME_FINISHED = false
             const val ACCEPT_GAME_INVITATION_DEFAULT = true
             const val ACCEPT_TOURNAMENT_INVITATION_DEFAULT = true
@@ -42,9 +43,16 @@ class Client1 : NopeEventListener {
             const val ACCEPT_INVITATION_AUTOMATICALLY = true // changed for debugging purpose, was false
 
             object DefaultGame {
+                const val ACTION_TIMEOUT = 10
+                const val INVITATION_TIMEOUT = 10
+                const val START_WITH_REJECTION = false
+                const val TOURNAMENT_SEND_GAME_INVITE = false
                 const val ACTION_CARDS_ENABLED = true
                 const val WILD_CARDS_ENABLED = true
                 const val ONE_MORE_START_CARDS_ENABLED = true
+                const val TOURNAMENT_MODE_NAME = "round-robin"
+                const val TOURNAMENT_NUMBER_OF_ROUNDS = 5
+                const val TOURNAMENT_POINTS_PER_GAME_WIN = true
             }
 
             object Console {
@@ -115,59 +123,53 @@ class Client1 : NopeEventListener {
         if (userIndicesToInvite.isEmpty()) {
             println("Inviting users skipped")
         } else {
-            // obtain game setting input
-            val actionCardsEnabled =
-                readBool("Enable action cards y/n (default ${Config.DefaultGame.ACTION_CARDS_ENABLED.toConsoleStringRepresentation()}): ")
-                    ?: Config.DefaultGame.ACTION_CARDS_ENABLED
-            val wildCardsEnabled =
-                readBool("Enable wild cards y/n (default ${Config.DefaultGame.WILD_CARDS_ENABLED.toConsoleStringRepresentation()}): ")
-                    ?: Config.DefaultGame.WILD_CARDS_ENABLED
-            val oneMoreStartCardsEnabled =
-                readBool("Enable one more start cards y/n (default ${Config.DefaultGame.ONE_MORE_START_CARDS_ENABLED.toConsoleStringRepresentation()}): ")
-                    ?: Config.DefaultGame.ONE_MORE_START_CARDS_ENABLED
-
+            // start game
+            val clientPlayer = connectedUsers.first { it.socketId == kotlinClientInterface.getClientSocketID() }
             // filter users matching the index list input and start game
-            startGame(
-                usersToInvite = connectedUsers.filterIndexed { index, _ ->
-                    // filter index+1, because the numbers printed to the console start from 1
-                    userIndicesToInvite.contains(index + 1)
-                },
-                clientPlayer = connectedUsers.first { it.socketId == kotlinClientInterface.getClientSocketID() },
-                noActionCards = !actionCardsEnabled,
-                noWildCards = !wildCardsEnabled,
-                oneMoreStartCards = oneMoreStartCardsEnabled,
-            )
+            val usersToInvite = connectedUsers.filterIndexed { index, _ ->
+                // filter index+1, because the numbers printed to the console start from 1
+                userIndicesToInvite.contains(index + 1)
+            }
+            if (Config.START_TOURNAMENT) {
+                // start tournament
+                val startTournamentResult = kotlinClientInterface.startTournament(
+                    StartTournamentPostData(
+                        mode = TournamentMode(
+                            name = Config.DefaultGame.TOURNAMENT_MODE_NAME,
+                            numberOfRounds = Config.DefaultGame.TOURNAMENT_NUMBER_OF_ROUNDS,
+                            pointsPerGameWin = Config.DefaultGame.TOURNAMENT_POINTS_PER_GAME_WIN
+                        ),
+                        noActionCards = !Config.DefaultGame.ACTION_CARDS_ENABLED,
+                        noWildCards = !Config.DefaultGame.WILD_CARDS_ENABLED,
+                        oneMoreStartCards = Config.DefaultGame.ONE_MORE_START_CARDS_ENABLED,
+                        actionTimeout = Config.DefaultGame.ACTION_TIMEOUT,
+                        invitationTimeout = Config.DefaultGame.INVITATION_TIMEOUT,
+                        startWithRejection = Config.DefaultGame.START_WITH_REJECTION,
+                        sendGameInvite = Config.DefaultGame.TOURNAMENT_SEND_GAME_INVITE,
+                        participants = usersToInvite.plus(connectedUsers.first { it.socketId == kotlinClientInterface.getClientSocketID() })
+                    )
+                )
+
+                println("Players invited (gameId: ${startTournamentResult.participants.joinToString { it.socketId }})")
+                log.fine("sent game invite to socket ids: ${startTournamentResult.participants.joinToString { it.socketId }}")
+            } else {
+                // start single game
+                val startGameResult = kotlinClientInterface.startGame(
+                    StartGamePostData(
+                        noActionCards = !Config.DefaultGame.ACTION_CARDS_ENABLED,
+                        noWildCards = !Config.DefaultGame.WILD_CARDS_ENABLED,
+                        oneMoreStartCards = Config.DefaultGame.ONE_MORE_START_CARDS_ENABLED,
+                        actionTimeout = Config.DefaultGame.ACTION_TIMEOUT,
+                        invitationTimeout = Config.DefaultGame.INVITATION_TIMEOUT,
+                        startWithRejection = Config.DefaultGame.START_WITH_REJECTION,
+                        players = usersToInvite.plus(connectedUsers.first { it.socketId == kotlinClientInterface.getClientSocketID() })
+                    )
+                )
+
+                println("Players invited (gameId: ${startGameResult.players.joinToString { it.socketId }})")
+                log.fine("sent game invite to socket ids: ${startGameResult.players.joinToString { it.socketId }}")
+            }
         }
-    }
-
-
-    /**
-     * Starts a new nope game and invites the users
-     *
-     * @param usersToInvite users that will be invited to the new nope game
-     * @param clientPlayer player object representing this client player
-     * */
-    private suspend fun startGame(
-        usersToInvite: List<Player>,
-        clientPlayer: Player,
-        noActionCards: Boolean,
-        noWildCards: Boolean,
-        oneMoreStartCards: Boolean,
-    ) {
-        val startGameResult = kotlinClientInterface.startGame(
-            StartGamePostData(
-                noActionCards = noActionCards,
-                noWildCards = noWildCards,
-                oneMoreStartCards = oneMoreStartCards,
-                actionTimeout = 10,
-                invitationTimeout = 10,
-                startWithRejection = false,
-                players = usersToInvite.plus(clientPlayer)
-            )
-        )
-
-        println("Players invited (gameId: ${startGameResult.players.joinToString { it.socketId }})")
-        log.fine("sent game invite to socket ids: ${startGameResult.players.joinToString { it.socketId }}")
     }
 
     /**** Overridden Websocket Events ****/
@@ -201,7 +203,6 @@ class Client1 : NopeEventListener {
     }
 
     override fun gameStateUpdate(game: Game) {
-        log.fine("gameStateUpdate received")
         // check whether it is the clients turn
         if (game.currentPlayer.username == loginCredentials.username) {
             val clientPlayer = game.currentPlayer
@@ -210,11 +211,13 @@ class Client1 : NopeEventListener {
 
             when (game.state) {
                 GameState.GAME_START -> {
+                    log.fine("game state GAME_START")
                     // game started
                     println("Game started (gameId: ${game.id}, startPlayer: ${game.currentPlayer.username})")
                 }
 
                 GameState.NOMINATE_FLIPPED -> {
+                    log.fine("game state NOMINATE_FLIPPED")
                     // game started and the first card on the discard pile is a nominate action card
                     // this allows the current player to nominate a player as if he played this nominate card
                     val canChooseColor = game.discardPile[0].hasAllColors()
@@ -229,15 +232,17 @@ class Client1 : NopeEventListener {
 
                 GameState.CARD_DRAWN,
                 GameState.TURN_START -> {
+                    log.fine("game state CARD_DRAWN | TURN_START")
+                    val discardPile = gameLogic.removeTopInvisibleCards(game.discardPile)
                     // get current discard pile card (current card has index 0)
                     val currentDiscardPileCard =
-                        game.discardPile.getOrNull(0) ?: throw Exception("discard pile is empty and game has not ended")
+                        discardPile.getOrNull(0) ?: throw Exception("discard pile is empty and game has not ended")
 
                     if (currentDiscardPileCard.type == CardType.NOMINATE) {
                         handleNominateCard(game, currentDiscardPileCard, clientPlayer)
                     } else {
                         val discardableNumberCards =
-                            gameLogic.getDiscardableNumberCards(game.discardPile, clientPlayer.cards)
+                            gameLogic.getDiscardableNumberCards(discardPile, clientPlayer.cards)
                         val discardableActionCards =
                             gameLogic.getDiscardableActionCards(currentDiscardPileCard.colors, clientPlayer.cards)
 
@@ -250,7 +255,6 @@ class Client1 : NopeEventListener {
                             discardableNumberCards.isNotEmpty() -> {
                                 // discard first valid set
                                 kotlinClientInterface.discardCard(discardableNumberCards[0])
-                                log.info(loginCredentials.username + " discarded card: " + discardableNumberCards[0])
                             }
 
                             else -> {
@@ -268,11 +272,13 @@ class Client1 : NopeEventListener {
                 }
 
                 GameState.GAME_END -> {
+                    log.fine("game state GAME_END")
                     // game ended
 
                 }
 
                 GameState.CANCELLED -> {
+                    log.fine("game state CANCELLED")
                     // cancelled
 
                 }
@@ -294,9 +300,6 @@ class Client1 : NopeEventListener {
         }
         val discardableNumberCards =
             gameLogic.findDiscardableNumberCardSet(colors, game.lastNominateAmount, clientPlayer.cards)
-        // TODO check if action cards are filtered correctly (case: nominate card should be handled and
-        //  the player has no number cards to play [discardableNumberCards.isNotEmpty()==false] and
-        //  can only play a action card)
         val discardableActionCards = gameLogic.getDiscardableActionCards(colors, clientPlayer.cards)
         if (discardableNumberCards.isNotEmpty()) {
             // discard matching number card for the condition of the nominate card

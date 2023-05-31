@@ -18,38 +18,32 @@ internal class Client1GameLogic {
      * @param hand hand of the client player
      * */
     fun getDiscardableNumberCards(currentDiscardPile: List<Card>, hand: List<Card>): List<List<Card>> {
-        if (currentDiscardPile.isEmpty()) return emptyList()
-
         val currentDiscardPileCard = currentDiscardPile[0]
-
-        // check if the discard pile contains just the start card
-        if (currentDiscardPile.size == 1) {
-            return when (currentDiscardPileCard.type) {
-                CardType.NUMBER -> {
-                    // card value must exist for number cards checked by this case
-                    findDiscardableNumberCardSet(currentDiscardPileCard.colors, currentDiscardPileCard.value!!, hand)
-                }
-
-                CardType.NOMINATE -> throw IllegalStateException("nominate card should not be detected in getDiscardableNumberCards")
-                CardType.RESET -> hand.filter { it.type == CardType.NUMBER }.map { listOf(it) }
-                // recursively get discardable cards for previous card on the discard pile (card before invisible action card)
-                CardType.INVISIBLE -> findDiscardableNumberCardSet(currentDiscardPileCard.colors, 1, hand)
+        return when (currentDiscardPileCard.type) {
+            CardType.NUMBER -> {
+                findDiscardableNumberCardSet(currentDiscardPileCard.colors, currentDiscardPileCard.value!!, hand)
             }
-        } else {
-            return when (currentDiscardPileCard.type) {
-                CardType.NUMBER -> {
-                    // card value must exist for number cards checked by this case
-                    findDiscardableNumberCardSet(currentDiscardPileCard.colors, currentDiscardPileCard.value!!, hand)
+
+            CardType.RESET -> {
+                // determine card to discard and return empty list if no card found
+                val cardToDiscard = determineDiscardCardForResetActionCard(hand) ?: return emptyList()
+                return listOf(listOf(cardToDiscard)) // return single card as list of card sets
+            }
+
+            CardType.NOMINATE -> {
+                // nominate card should be handled separately in TURN_START event
+                throw IllegalStateException("unhandled nominate card detected on discard pile")
+            }
+
+            CardType.INVISIBLE -> {
+                if (currentDiscardPile.size == 1) {
+                    // edge case invisible card as first card on the discard pile on game start
+                    // TODO is it possible to discard action cards with matching color in this edge case too?
+                    findDiscardableNumberCardSet(currentDiscardPileCard.colors, 1, hand)
+                } else {
+                    // nominate card should only be detected as first and single card on the discard pile
+                    throw IllegalStateException("invisible card detected on the discard pile with more than one card")
                 }
-                // TODO probably the discard pile contained a invisible card on top of a nominate card... and
-                //  getDiscardableNumberCards removed the inv card and then the nominate card is detected in this condition
-                CardType.NOMINATE -> throw IllegalStateException("nominate card should not be detected in getDiscardableNumberCards")
-                CardType.RESET -> hand.filter { it.type == CardType.NUMBER }.map { listOf(it) }
-                // recursively get discardable cards for previous card on the discard pile (card before invisible action card)
-                CardType.INVISIBLE -> getDiscardableNumberCards(
-                    currentDiscardPile.subList(1, currentDiscardPile.size),
-                    hand
-                )
             }
         }
     }
@@ -87,6 +81,11 @@ internal class Client1GameLogic {
         return discardableActionCards
     }
 
+    private fun determineDiscardCardForResetActionCard(hand: List<Card>): Card? {
+        // TODO implement logic to determine best card to discard on reset action card
+        return hand.firstOrNull()
+    }
+
     /**
      * Determines the best player to select as nominated player in the current state
      * */
@@ -110,5 +109,17 @@ internal class Client1GameLogic {
     fun determineNominatedAmount(game: Game, clientPlayer: Player): Int {
         // TODO implement logic to determine best amount
         return 1
+    }
+
+    /**
+     * starting from the top, this method removes all invisible cards from the discard pile, until a non-invisible card
+     * is found at the top or the discard pile has only one card left
+     * */
+    fun removeTopInvisibleCards(discardPile: List<Card>): List<Card> {
+        val currentCard = discardPile.getOrNull(0) ?: throw Exception("discard pile is empty and game has not ended")
+        return if (discardPile.size > 1 && currentCard.type == CardType.INVISIBLE)
+            removeTopInvisibleCards(discardPile.subList(1, discardPile.size))
+        else
+            discardPile
     }
 }
