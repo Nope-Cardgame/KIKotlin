@@ -6,7 +6,7 @@ package entity
  */
 data class Card(
     val type: CardType,
-    val value: Int,
+    val value: Int? = null,
     val colors: List<CardColor>,
     val name: String
 )

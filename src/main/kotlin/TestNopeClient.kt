@@ -49,7 +49,7 @@ class TestNopeClient(
         val startGameResult = kotlinClientInterface.startGame(
             StartGamePostData(
                 noActionCards = true,
-                noWildcards = false,
+                noWildCards = false,
                 oneMoreStartCards = false,
                 players = listOf(playerToInvite, clientPlayer)
             )

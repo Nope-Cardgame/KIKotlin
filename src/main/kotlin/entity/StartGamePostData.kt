@@ -6,7 +6,7 @@ package entity
  */
 data class StartGamePostData(
     val noActionCards: Boolean,
-    val noWildcards: Boolean,
+    val noWildCards: Boolean,
     val oneMoreStartCards: Boolean,
     val players: List<Player>
 )

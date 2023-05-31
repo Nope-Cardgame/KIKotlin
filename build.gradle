@@ -25,6 +25,7 @@ dependencies {
     //SocketIO
     implementation("io.socket:socket.io-client:2.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
 test {
@@ -41,4 +42,9 @@ compileTestKotlin {
 
 application {
     mainClassName = 'MainKt'
+}
+kotlin {
+    jvmToolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
 }
