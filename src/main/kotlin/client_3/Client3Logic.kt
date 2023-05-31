@@ -1,9 +1,6 @@
 package client_3
 
-import entity.Card
-import entity.CardColor
-import entity.CardType
-import entity.Game
+import entity.*
 import kotlin.math.min
 
 class Client3Logic {
@@ -15,27 +12,29 @@ class Client3Logic {
      *          If list is empty not enough cards are available
      */
     fun checkForDiscard(hand: List<Card>, discardPileCard: Card, game: Game): List<Card> {
+        val nextPlayer: Player = game.players.first { it.socketId != game.currentPlayer.socketId && (!it.disqualified)}
         //console print to track game
         println("++ discard Pile: ${discardPileCard.value} ${discardPileCard.name} ++")
         for ((index, card) in hand.withIndex()) {
             println("Card$index: nr. ${card.value} color ${card.name}")
         }
-
+        //actionCard handling
         if (discardPileCard.type != CardType.NUMBER) {
             when(discardPileCard.type) {
                 CardType.NUMBER -> {
                     println("shouldn't be here(check for discard->notNumber->Number)")
                 }
+                //creates temporary card to handle call normally(like a numbercard)
                 CardType.NOMINATE -> {
                    var col: List<CardColor> = discardPileCard.colors
                     if (discardPileCard.colors.size > 1) {
                         col = listOf(game.lastNominateColor)
                     }
                     return checkForDiscard(hand, Card(CardType.NUMBER,game.lastNominateAmount,col , "Special NOMINATE"), game)}
+                //plays first card in hand
                 CardType.RESET -> {return listOf<Card>(hand[0])}
-                CardType.INVISIBLE -> {
-                    //** can only happen, if it is the startCard **
-                    //checks if there is a card in hand in this color to discard
+                //checks if there is a card in hand in this color to discard
+                CardType.INVISIBLE -> { //** can only happen, if it is the startCard **
                     for (card in hand) {
                         for (color in card.colors) {
                             if (color == discardPileCard.colors[0]) {
@@ -53,10 +52,9 @@ class Client3Logic {
             var counter: Int = 0
             //checks each card of the hand
             for (handCard in hand) {
-                //checks each color of the card
-
+                //checks each color of the card from hand
                 for (oneColor in handCard.colors) {
-                    val comparing =oneColor == color
+                    val comparing = oneColor == color
                     println("$comparing, ${handCard.name}")
                     if (comparing) {
                         counter++
@@ -66,12 +64,24 @@ class Client3Logic {
                     }
                 }
             }
+            //if the counter is higher, the current color is taken to discard
             if (counter >= discardPileCard.value!!) {
                 //discardCards.sortByDescending {it.colors.size}
-                //sort by value + colorAmount or colorrating if first part is equal
+                //sort by value * colorAmount or colorrating if first part is equal
                 for (i in 0 until discardCards.size) {
-                    val value1 = (discardCards[0].value!! + discardCards[0].colors.size)
-                    val value2 = (discardCards[1].value!! + discardCards[1].colors.size)
+                    var value1 = (discardCards[0].value!! * discardCards[0].colors.size)
+                    if (discardCards[0].value == 3) {
+                        if (nextPlayer.cards.size <= 7) {
+                            value1 -= 3
+                        }
+
+                    }
+                    var value2 = (discardCards[1].value!! * discardCards[1].colors.size)
+                    if (discardCards[1].value == 3) {
+                        if (nextPlayer.cards.size <= 7) {
+                            value2 -= 3
+                        }
+                    }
                     if (value1 < value2 ||
                         value1 == value2 && getCardColorRating(discardCards[0], game) > getCardColorRating(discardCards[1], game)) {
                         val temp: Card = discardCards[0]
