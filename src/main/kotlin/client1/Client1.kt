@@ -19,6 +19,8 @@ import java.util.logging.Logger
  * [KotlinClientInterface].
  *
  * @author [Jonas Pollpeter](https://github.com/JonasPTFL)
+ *
+ * TODO add explanation parameter to all game actions
  */
 class Client1 : NopeEventListener {
     private val log = Logger.getLogger(javaClass.name)
@@ -51,7 +53,7 @@ class Client1 : NopeEventListener {
                 const val WILD_CARDS_ENABLED = true
                 const val ONE_MORE_START_CARDS_ENABLED = true
                 const val TOURNAMENT_MODE_NAME = "round-robin"
-                const val TOURNAMENT_NUMBER_OF_ROUNDS = 5
+                const val TOURNAMENT_NUMBER_OF_ROUNDS = 10
                 const val TOURNAMENT_POINTS_PER_GAME_WIN = true
             }
 
@@ -221,12 +223,13 @@ class Client1 : NopeEventListener {
                     // game started and the first card on the discard pile is a nominate action card
                     // this allows the current player to nominate a player as if he played this nominate card
                     val canChooseColor = game.discardPile[0].hasAllColors()
+                    val nominatedPlayer = gameLogic.determineNominatedPlayer(game, clientPlayer)
                     kotlinClientInterface.nominateCard(
                         cards = emptyList(),
-                        nominatedPlayer = gameLogic.determineNominatedPlayer(game, clientPlayer),
+                        nominatedPlayer = nominatedPlayer,
                         // TODO only send color when canChooseColor. The sever currently ignores this to be set
                         nominatedColor = gameLogic.determineNominatedColor(game, clientPlayer),
-                        nominatedAmount = gameLogic.determineNominatedAmount(game, clientPlayer)
+                        nominatedAmount = gameLogic.determineNominatedAmount(game, clientPlayer, nominatedPlayer),
                     )
                 }
 
@@ -332,13 +335,14 @@ class Client1 : NopeEventListener {
         when (discardableActionCards[0].type) {
             CardType.NOMINATE -> {
                 val canChooseColor = game.discardPile[0].hasAllColors()
+                val nominatedPlayer = gameLogic.determineNominatedPlayer(game, clientPlayer)
                 // test call use nominate card
                 kotlinClientInterface.nominateCard(
                     cards = listOf(discardableActionCards[0]),
-                    nominatedPlayer = gameLogic.determineNominatedPlayer(game, clientPlayer),
+                    nominatedPlayer = nominatedPlayer,
                     // TODO only send color when canChooseColor. The sever currently ignores this to be set
                     nominatedColor = gameLogic.determineNominatedColor(game, clientPlayer),
-                    nominatedAmount = gameLogic.determineNominatedAmount(game, clientPlayer)
+                    nominatedAmount = gameLogic.determineNominatedAmount(game, clientPlayer, nominatedPlayer)
                 )
                 log.info(loginCredentials.username + " discarded action card: " + discardableActionCards[0])
             }

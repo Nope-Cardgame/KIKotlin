@@ -57,11 +57,11 @@ internal class Client1GameLogic {
                 // filter card-set-candidates that matches the required amount of card, which is
                 // given by the number value of the current discard pile
                 setCandidate.size >= amount
-            }?.take(
-                // TODO implement logic, that discards specific cards for a good reason and not just discard
-                //  the first valid card set
-                amount
-            )
+            }
+                // sort card candidates by color count descending to discard cards with more colors first
+                // TODO improve logic that decides which card should be discarded in relation to game state
+                ?.sortedByDescending { it.colors.size }
+                ?.take(amount)
         }
     }
 
@@ -75,39 +75,76 @@ internal class Client1GameLogic {
         val actionCardsInvisible = hand.filter { it.type == CardType.INVISIBLE && colors.containsAny(it.colors) }
         val actionCardsReset = hand.filter { it.type == CardType.RESET }
         discardableActionCards.addAll(actionCardsNominate)
-        discardableActionCards.addAll(actionCardsInvisible)
         discardableActionCards.addAll(actionCardsReset)
+        discardableActionCards.addAll(actionCardsInvisible)
 
         return discardableActionCards
     }
 
+    /**
+     * Determines the best card to discard for a reset action card event
+     * */
     private fun determineDiscardCardForResetActionCard(hand: List<Card>): Card? {
-        // TODO implement logic to determine best card to discard on reset action card
-        return hand.firstOrNull()
+        // get card with the most colors
+        val maxColorsCard = hand.filter { it.type == CardType.NUMBER }.maxByOrNull { it.colors.size }
+        if (maxColorsCard != null) return maxColorsCard
+
+        // determine the best non number card to discard
+        // check least valuable invisible cards at first and sort them by color amount descending
+        val invisibleCards = hand.filter { it.type == CardType.INVISIBLE }.sortedByDescending { it.colors.size }
+        if (invisibleCards.isNotEmpty()) return invisibleCards.first()
+
+        // check reset cards and sort them by color amount descending
+        val resetCards = hand.filter { it.type == CardType.RESET }.sortedByDescending { it.colors.size }
+        if (resetCards.isNotEmpty()) return resetCards.first()
+
+        // check most valuable nominate cards and sort them by color amount descending
+        val nominateCards = hand.filter { it.type == CardType.RESET }.sortedBy { it.colors.size }
+        if (nominateCards.isNotEmpty()) return nominateCards.first()
+
+        return null
     }
 
     /**
      * Determines the best player to select as nominated player in the current state
      * */
     fun determineNominatedPlayer(game: Game, clientPlayer: Player): Player {
-        // TODO implement logic to determine best player
-        return game.players.first { it.socketId != clientPlayer.socketId && !it.disqualified }
+        // get player with the least card amount, which is either disqualified nor the client player
+        return game.players.filter { it.socketId != clientPlayer.socketId && !it.disqualified }.minBy { it.cards.size }
     }
 
     /**
      * Determines the best color to select as nominated color in the current state
      * */
     fun determineNominatedColor(game: Game, clientPlayer: Player): CardColor {
-        // TODO implement logic to determine best color
-        return CardColor.RED
+        val cardColorsCount = mutableMapOf<CardColor, Int>()
+        clientPlayer.cards.forEach {
+            it.colors.forEach { cardColor ->
+                // increase card color counter by 1
+                cardColorsCount[cardColor] = cardColorsCount.getOrDefault(cardColor, 0) + 1
+            }
+        }
+
+        // determine card color with the least occurrences in the client players hand cards
+        return cardColorsCount.minBy { it.value }.key
     }
 
     /**
      * Determines the best amount to select as nominated amount in the current state
      * @return int in interval [1,3]
      * */
-    fun determineNominatedAmount(game: Game, clientPlayer: Player): Int {
-        // TODO implement logic to determine best amount
+    fun determineNominatedAmount(game: Game, clientPlayer: Player, nominatedPlayer: Player): Int {
+        if (game.discardPile[0].hasAllColors() && nominatedPlayer.cardAmount != null && nominatedPlayer.cardAmount >= 3)
+            return 3
+
+        // count matching number cards, that could be discarded by the client player, if no other player can
+        // discard a card for this nominate request
+        val clientPlayerHasMatchingCard =
+            clientPlayer.cards.count { it.type == CardType.NUMBER && it.colors.containsAny(game.discardPile[0].colors) }
+        if (clientPlayerHasMatchingCard < 3 && nominatedPlayer.cardAmount != null && nominatedPlayer.cardAmount >= 3) {
+            // if player has less than 3 matching cards, determine nominate amount 3
+            return 3
+        }
         return 1
     }
 
