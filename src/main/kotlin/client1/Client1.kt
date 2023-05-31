@@ -34,8 +34,8 @@ class Client1 : NopeEventListener {
 
         object Config {
             const val START_TOURNAMENT = true // determines, whether a tournament should be started instead of a single game
-            const val ASK_TO_INVITE_ON_CONNECT = true
-            const val ASK_TO_INVITE_AFTER_GAME_FINISHED = false
+            const val ASK_TO_INVITE_ON_CONNECT = false
+            const val ASK_TO_INVITE_AFTER_FINISHED = false
             const val ACCEPT_GAME_INVITATION_DEFAULT = true
             const val ACCEPT_TOURNAMENT_INVITATION_DEFAULT = true
 
@@ -376,7 +376,7 @@ class Client1 : NopeEventListener {
         println("Game end (gameId: ${game.id}). Result ranking:")
         println(playerListResult)
 
-        if (Config.ASK_TO_INVITE_AFTER_GAME_FINISHED) {
+        if (!Config.START_TOURNAMENT && Config.ASK_TO_INVITE_AFTER_FINISHED) {
             runBlocking {
                 launch {
                     askToInviteUsers()
@@ -394,6 +394,14 @@ class Client1 : NopeEventListener {
                 .joinToString(separator = "\n") { it.getEndGameStringFormat() }
         println("Tournament end (tournamentId: ${tournament.id}). Result ranking:")
         println(playerListResult)
+
+        if (Config.START_TOURNAMENT && Config.ASK_TO_INVITE_AFTER_FINISHED) {
+            runBlocking {
+                launch {
+                    askToInviteUsers()
+                }
+            }
+        }
     }
 
     override fun gameInvite(game: Game): Boolean {
