@@ -4,6 +4,7 @@ import entity.Card
 import entity.CardColor
 import entity.CardType
 import entity.Game
+import kotlin.math.min
 
 class Client3Logic {
 
@@ -48,7 +49,7 @@ class Client3Logic {
         //check hand for each color of discardPileCard
         for (color in discardPileCard.colors) {
             println("-----color: $color----")
-            val discardCards = mutableListOf<Card>()
+            var discardCards = mutableListOf<Card>()
             var counter: Int = 0
             //checks each card of the hand
             for (handCard in hand) {
@@ -66,7 +67,18 @@ class Client3Logic {
                 }
             }
             if (counter >= discardPileCard.value!!) {
-                discardCards.sortByDescending {it.colors.size}
+                //discardCards.sortByDescending {it.colors.size}
+                //sort by value + colorAmount or colorrating if first part is equal
+                for (i in 0 until discardCards.size) {
+                    val value1 = (discardCards[0].value!! + discardCards[0].colors.size)
+                    val value2 = (discardCards[1].value!! + discardCards[1].colors.size)
+                    if (value1 < value2 ||
+                        value1 == value2 && getCardColorRating(discardCards[0], game) > getCardColorRating(discardCards[1], game)) {
+                        val temp: Card = discardCards[0]
+                        discardCards = discardCards.subList(1, discardCards.lastIndex)
+                        discardCards.add(temp)
+                    }
+                }
                 return discardCards.subList(0, discardPileCard.value)
             }
         }
@@ -82,5 +94,30 @@ class Client3Logic {
         return discardPileCard[0]
     }
 
+    private fun getRemainingCards(searchedColor: CardColor, game: Game) :Int {
+        var colorCards: Int = 0
+        var allKnownCards = mutableListOf<Card>()
+        allKnownCards = game.discardPile.toMutableList()
+        allKnownCards.addAll(game.currentPlayer.cards)
+
+        for (card in allKnownCards) {
+            for (color in card.colors) {
+                if (color == searchedColor) {
+                    colorCards++
+                    break
+                }
+            }
+        }
+        return colorCards
+    }
+    
+    fun getCardColorRating(checkCard: Card, game: Game) : Int {
+        var minVal: Int = 1000
+        for (cardColor in checkCard.colors) {
+            minVal = min(getRemainingCards(cardColor, game), minVal)
+                
+            }
+        return minVal
+        }
 
 }
