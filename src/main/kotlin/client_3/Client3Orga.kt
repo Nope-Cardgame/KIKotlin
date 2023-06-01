@@ -203,6 +203,7 @@ class Client3Orga(private val username: String, password: String, private val us
                     discard = List<Card>(1) { card }
                     break
                 }
+
                 CardType.INVISIBLE -> {
                     for (color in relevantBoardCard.colors) {
                         if (card.colors[0] == color) {
@@ -231,9 +232,9 @@ class Client3Orga(private val username: String, password: String, private val us
                 kotlinClientInterface.discardCard(discard,"i got a special card!")
             }
         } else {
-            val remove = discard.sortedByDescending {it.colors.size}// TODO
+            //val remove = discard.sortedByDescending {it.colors.size}// TODO
 
-            kotlinClientInterface.discardCard(remove,"first set to be found")
+            kotlinClientInterface.discardCard(discard,"first set to be found")
 
         }
     }
