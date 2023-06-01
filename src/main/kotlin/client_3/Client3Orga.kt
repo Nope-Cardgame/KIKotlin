@@ -8,6 +8,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.logging.ConsoleHandler
+import java.util.logging.FileHandler
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -31,7 +32,7 @@ class Client3Orga(private val username: String, password: String, private val us
         kotlinClientInterface = KotlinClientInterface(username, password, this)
 
         // setup logger
-        val consoleHandler = ConsoleHandler()
+        val consoleHandler = FileHandler("./log.txt")
         consoleHandler.level = Level.ALL
         consoleHandler.formatter = LogConsoleFormatter()
         log.addHandler(consoleHandler)
@@ -67,7 +68,7 @@ class Client3Orga(private val username: String, password: String, private val us
             runBlocking {
                 launch {
                     // wait until the other client is connected
-                    delay(3000)
+                    delay(1500)
                     // Let client start the game. This will cause client1 to invite the player with name usernameToInvite
                     startGame()
                 }
@@ -93,13 +94,25 @@ class Client3Orga(private val username: String, password: String, private val us
 
     override fun gameStateUpdate(game: Game) {
         val nextPlayer: Player = game.players.first { it.socketId != game.currentPlayer.socketId && (!it.disqualified)}
-        log.fine("gameStateUpdate received")
+        //log.fine("gameStateUpdate received")
         //check if its this clients turn
         if (game.currentPlayer.username == username) {
 
            when(game.state) {
 
-               GameState.GAME_START -> {println("Game has started.")}
+               GameState.GAME_START -> {
+                   println("Game has started")
+                   log.fine("Game started at ${game.startTime} with the game ID: ${game.id}\n" +
+                           "Game started with: \n" +
+                           "Action Cards: ${!game.noActionCards}\n" +
+                           "Wild Cards: ${!game.noWildCards}\n" +
+                           "1 more Start card: ${game.oneMoreStartCards}\n" +
+                           "The starting card is ${game.initialTopCard}" +
+                           "Name | ranking | disqualified | sockedId")
+                   for (player in game.players) {
+                       log.fine("${player.username}, ${player.ranking}, ${player.disqualified}, ${player.socketId}")
+                   }
+               }
                GameState.NOMINATE_FLIPPED -> { //game start with nominated flipped
                    val col = game.discardPile[0].colors[0]
                    kotlinClientInterface.nominateCard(
@@ -146,7 +159,9 @@ class Client3Orga(private val username: String, password: String, private val us
 
                }
                GameState.CANCELLED -> {println("Game invite has been canceled..")}
-               GameState.GAME_END -> TODO()
+               GameState.GAME_END -> {
+                   log.fine("The game (${game.id}) ended at ${game.endTime}")
+               }
            }
         }
     }
