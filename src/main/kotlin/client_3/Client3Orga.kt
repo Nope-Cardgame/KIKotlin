@@ -68,7 +68,7 @@ class Client3Orga(private val username: String, password: String, private val us
             runBlocking {
                 launch {
                     // wait until the other client is connected
-                    delay(1500)
+                    delay(3000)
                     // Let client start the game. This will cause client1 to invite the player with name usernameToInvite
                     startGame()
                 }
