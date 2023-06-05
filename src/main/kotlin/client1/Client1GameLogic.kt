@@ -13,11 +13,32 @@ import entity.*
 internal class Client1GameLogic {
 
     /**
+     * Assigns a number card an evaluated number
+     * */
+    data class EvaluatedNumberCard(
+        val numberCard: Card,
+        val evaluation: Int
+    )
+
+    /**
+     * Evaluates a given card by the amount of colors and the amount of matching hand cards given by the parameter hand.
+     * */
+    fun evaluateNumerCard(card: Card, hand: List<Card>): EvaluatedNumberCard {
+        if (card.type != CardType.NUMBER) throw IllegalArgumentException("Card to evaluate must not be of type '${card.type}'")
+
+        // sort card by color count to discard cards with more colors first
+        // further more add the amount of matching hand cards to the filter. This prevents the player from
+        // discarding a card on his own card, after no other player could discard
+        val evaluationValue = card.colors.size + hand.count { handCard -> handCard.colors.containsAny(card.colors) }
+        return EvaluatedNumberCard(card, evaluationValue)
+    }
+
+    /**
      * Finds all card sets of the same color, which contain enough cards to discard a specific part of them
      * @param currentDiscardPile current discard pile list
      * @param hand hand of the client player
      * */
-    fun getDiscardableNumberCards(currentDiscardPile: List<Card>, hand: List<Card>): List<List<Card>> {
+    fun getDiscardableNumberCards(currentDiscardPile: List<Card>, hand: List<Card>): List<Card> {
         val currentDiscardPileCard = currentDiscardPile[0]
         return when (currentDiscardPileCard.type) {
             CardType.NUMBER -> {
@@ -27,7 +48,7 @@ internal class Client1GameLogic {
             CardType.RESET -> {
                 // determine card to discard and return empty list if no card found
                 val cardToDiscard = determineDiscardCardForResetActionCard(hand) ?: return emptyList()
-                return listOf(listOf(cardToDiscard)) // return single card as list of card sets
+                return listOf(cardToDiscard) // return single card as list of card sets
             }
 
             CardType.NOMINATE -> {
@@ -48,7 +69,7 @@ internal class Client1GameLogic {
         }
     }
 
-    fun findDiscardableNumberCardSet(colors: List<CardColor>, amount: Int, hand: List<Card>): List<List<Card>> {
+    fun findDiscardableNumberCardSet(colors: List<CardColor>, amount: Int, hand: List<Card>): List<Card> {
         return colors.mapNotNull { requiredColor ->
             hand.filter { handCard ->
                 // filter hand by cards matching the required color
@@ -58,11 +79,11 @@ internal class Client1GameLogic {
                 // given by the number value of the current discard pile
                 setCandidate.size >= amount
             }
-                // sort card candidates by color count descending to discard cards with more colors first
-                // TODO improve logic that decides which card should be discarded in relation to game state
-                ?.sortedByDescending { it.colors.size }
+                ?.map { evaluateNumerCard(it, hand) }
                 ?.take(amount)
         }
+            // sort valid card candidate sets by the evaluated value of the first card (this card will be on discard pile top)
+            .minByOrNull { it[0].evaluation }?.map { it.numberCard } ?: emptyList()
     }
 
     /**

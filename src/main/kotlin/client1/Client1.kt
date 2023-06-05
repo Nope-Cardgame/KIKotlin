@@ -244,7 +244,7 @@ class Client1 : NopeEventListener {
                     if (currentDiscardPileCard.type == CardType.NOMINATE) {
                         handleNominateCard(game, currentDiscardPileCard, clientPlayer)
                     } else {
-                        val discardableNumberCards =
+                        val discardableNumberCardSet =
                             gameLogic.getDiscardableNumberCards(discardPile, clientPlayer.cards)
                         val discardableActionCards =
                             gameLogic.getDiscardableActionCards(currentDiscardPileCard.colors, clientPlayer.cards)
@@ -255,9 +255,10 @@ class Client1 : NopeEventListener {
                                 discardBestActionCard(discardableActionCards, game, clientPlayer)
                             }
                             // check whether this client can discard any set of cards
-                            discardableNumberCards.isNotEmpty() -> {
+                            discardableNumberCardSet.isNotEmpty() -> {
                                 // discard first valid set
-                                kotlinClientInterface.discardCard(discardableNumberCards[0])
+                                // first card of the parameter list given to discardCard will be discarded at the top
+                                kotlinClientInterface.discardCard(discardableNumberCardSet)
                             }
 
                             else -> {
@@ -301,12 +302,12 @@ class Client1 : NopeEventListener {
         } else {
             currentDiscardPileCard.colors
         }
-        val discardableNumberCards =
+        val discardableNumberCardSet =
             gameLogic.findDiscardableNumberCardSet(colors, game.lastNominateAmount, clientPlayer.cards)
         val discardableActionCards = gameLogic.getDiscardableActionCards(colors, clientPlayer.cards)
-        if (discardableNumberCards.isNotEmpty()) {
+        if (discardableNumberCardSet.isNotEmpty()) {
             // discard matching number card for the condition of the nominate card
-            kotlinClientInterface.discardCard(discardableNumberCards[0])
+            kotlinClientInterface.discardCard(discardableNumberCardSet)
             log.info("discarded number card after nominate")
         } else if (discardableActionCards.isNotEmpty()){
             // discard matching action card for the condition of the nominate card
