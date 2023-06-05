@@ -53,7 +53,7 @@ class Client1 : NopeEventListener {
                 const val WILD_CARDS_ENABLED = true
                 const val ONE_MORE_START_CARDS_ENABLED = true
                 const val TOURNAMENT_MODE_NAME = "round-robin"
-                const val TOURNAMENT_NUMBER_OF_ROUNDS = 10
+                const val TOURNAMENT_NUMBER_OF_ROUNDS = 15
                 const val TOURNAMENT_POINTS_PER_GAME_WIN = true
             }
 

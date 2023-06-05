@@ -12,24 +12,46 @@ import entity.*
  */
 internal class Client1GameLogic {
 
+    companion object {
+
+        /**
+         * These values are integrated to the evaluator calculation when evaluating cards
+         * */
+        object Evaluator {
+            /**
+             * Factor by which the amount of colors of the card is multiplied
+             * */
+            const val CARD_COLOR_AMOUNT_WEIGHT_FACTOR: Float = 1.0f
+
+            /**
+             * Factor by which the amount of hand cards matching the card is multiplied
+             * */
+            const val MATCHING_CARD_AMOUNT_WEIGHT_FACTOR: Float = 0.0f
+        }
+    }
+
     /**
      * Assigns a number card an evaluated number
+     *
+     * @param evaluation higher evaluation means it is better to play the card in the current state
      * */
     data class EvaluatedNumberCard(
         val numberCard: Card,
-        val evaluation: Int
+        val evaluation: Float
     )
 
     /**
      * Evaluates a given card by the amount of colors and the amount of matching hand cards given by the parameter hand.
      * */
-    fun evaluateNumerCard(card: Card, hand: List<Card>): EvaluatedNumberCard {
+    private fun evaluateNumerCard(card: Card, hand: List<Card>): EvaluatedNumberCard {
         if (card.type != CardType.NUMBER) throw IllegalArgumentException("Card to evaluate must not be of type '${card.type}'")
 
         // sort card by color count to discard cards with more colors first
         // further more add the amount of matching hand cards to the filter. This prevents the player from
         // discarding a card on his own card, after no other player could discard
-        val evaluationValue = card.colors.size + hand.count { handCard -> handCard.colors.containsAny(card.colors) }
+        val evaluationValue: Float =
+            card.colors.size * Evaluator.CARD_COLOR_AMOUNT_WEIGHT_FACTOR -
+                    hand.count { handCard -> handCard.colors.containsAny(card.colors) } * Evaluator.MATCHING_CARD_AMOUNT_WEIGHT_FACTOR
         return EvaluatedNumberCard(card, evaluationValue)
     }
 
@@ -80,10 +102,11 @@ internal class Client1GameLogic {
                 setCandidate.size >= amount
             }
                 ?.map { evaluateNumerCard(it, hand) }
+                ?.sortedByDescending { it.evaluation }
                 ?.take(amount)
         }
             // sort valid card candidate sets by the evaluated value of the first card (this card will be on discard pile top)
-            .minByOrNull { it[0].evaluation }?.map { it.numberCard } ?: emptyList()
+            .maxByOrNull { it[0].evaluation }?.map { it.numberCard } ?: emptyList()
     }
 
     /**
