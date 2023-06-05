@@ -1,0 +1,3 @@
+[FINE: client_3.Client3Orga/jan] socketConnected received
+[FINE: client_3.Client3Orga/jan] gameInvite received
+[FINE: client_3.Client3Orga/jan] gameEnd received
