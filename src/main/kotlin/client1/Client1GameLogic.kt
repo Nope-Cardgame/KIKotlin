@@ -26,7 +26,7 @@ internal class Client1GameLogic {
             /**
              * Factor by which the amount of hand cards matching the card is multiplied
              * */
-            const val MATCHING_CARD_AMOUNT_WEIGHT_FACTOR: Float = 0.0f
+            const val MATCHING_CARD_AMOUNT_WEIGHT_FACTOR: Float = 0.3f
         }
     }
 
@@ -106,7 +106,8 @@ internal class Client1GameLogic {
                 ?.take(amount)
         }
             // sort valid card candidate sets by the evaluated value of the first card (this card will be on discard pile top)
-            .maxByOrNull { it[0].evaluation }?.map { it.numberCard } ?: emptyList()
+            .maxByOrNull { it.first().evaluation }
+            ?.map { it.numberCard } ?: emptyList()
     }
 
     /**
