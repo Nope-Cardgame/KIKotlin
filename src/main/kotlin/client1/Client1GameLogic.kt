@@ -204,4 +204,9 @@ internal class Client1GameLogic {
         else
             discardPile
     }
+
+    fun findBestActionCardToDiscard(discardableActionCards: List<Card>, clientPlayer: Player, game: Game): Card {
+        // TODO implement logic, that discards specific action card
+        return discardableActionCards.first()
+    }
 }

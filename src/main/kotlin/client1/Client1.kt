@@ -227,8 +227,7 @@ class Client1 : NopeEventListener {
                     kotlinClientInterface.nominateCard(
                         cards = emptyList(),
                         nominatedPlayer = nominatedPlayer,
-                        // TODO only send color when canChooseColor. The sever currently ignores this to be set
-                        nominatedColor = gameLogic.determineNominatedColor(game, clientPlayer),
+                        nominatedColor = gameLogic.determineNominatedColor(game, clientPlayer).takeIf { canChooseColor },
                         nominatedAmount = gameLogic.determineNominatedAmount(game, clientPlayer, nominatedPlayer),
                     )
                 }
@@ -332,30 +331,29 @@ class Client1 : NopeEventListener {
         game: Game,
         clientPlayer: Player
     ) {
-        // TODO implement logic, that discards specific action card
-        when (discardableActionCards[0].type) {
+        val bestActionCard = gameLogic.findBestActionCardToDiscard(discardableActionCards, clientPlayer, game)
+        when (bestActionCard.type) {
             CardType.NOMINATE -> {
-                val canChooseColor = game.discardPile[0].hasAllColors()
+                val canChooseColor = bestActionCard.hasAllColors()
                 val nominatedPlayer = gameLogic.determineNominatedPlayer(game, clientPlayer)
                 // test call use nominate card
                 kotlinClientInterface.nominateCard(
-                    cards = listOf(discardableActionCards[0]),
+                    cards = listOf(bestActionCard),
                     nominatedPlayer = nominatedPlayer,
-                    // TODO only send color when canChooseColor. The sever currently ignores this to be set
-                    nominatedColor = gameLogic.determineNominatedColor(game, clientPlayer),
+                    nominatedColor = gameLogic.determineNominatedColor(game, clientPlayer).takeIf { canChooseColor },
                     nominatedAmount = gameLogic.determineNominatedAmount(game, clientPlayer, nominatedPlayer)
                 )
-                log.info(loginCredentials.username + " discarded action card: " + discardableActionCards[0])
+                log.info(loginCredentials.username + " discarded action card: " + bestActionCard)
             }
 
             CardType.RESET, CardType.INVISIBLE -> {
                 // test call use other actions cards
-                kotlinClientInterface.discardCard(cards = listOf(discardableActionCards[0]))
-                log.info(loginCredentials.username + " discarded action card: " + discardableActionCards[0])
+                kotlinClientInterface.discardCard(cards = listOf(bestActionCard))
+                log.info(loginCredentials.username + " discarded action card: " + bestActionCard)
             }
 
             else -> {
-                throw IllegalStateException("Card type ${discardableActionCards[0].type} is not implemented for element in discardableActionCards")
+                throw IllegalStateException("Card type ${bestActionCard.type} is not implemented for element in discardableActionCards")
             }
         }
     }
