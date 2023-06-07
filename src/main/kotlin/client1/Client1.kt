@@ -19,8 +19,6 @@ import java.util.logging.Logger
  * [KotlinClientInterface].
  *
  * @author [Jonas Pollpeter](https://github.com/JonasPTFL)
- *
- * TODO add explanation parameter to all game actions
  */
 class Client1 : NopeEventListener {
     private val log = Logger.getLogger(javaClass.name)
