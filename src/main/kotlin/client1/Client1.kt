@@ -65,6 +65,18 @@ class Client1 : NopeEventListener {
 
         }
 
+        object Explanation {
+            const val DISCARD_RESET_CARD = "Neusart Karte gespielt, da der nächste Spieler nur noch eine Karte hat und das Spiel dadurch beendet werden würde, oder keine bessere Aktionskarte gefunden wurde"
+            const val DISCARD_INVISIBLE_CARD = "Durchblickkarte gespielt, da keine bessere Aktions- oder Zahlenkarte gefunden wurde"
+            const val DISCARD_NOMINATE_CARD = "Auswahlkarte auf den Spieler mit den wenigste Karten ausgespielt, da diese als beste spielbare Aktionskarte angesehen wurde"
+            const val SAY_NOPE_ACTION_ON_NOMINATED = "Nope! gesagt, nachdem eine Auswahlkarte auf diesen Spieler gespielt wurde und weder die zuvor vom Nachziehstapel gezogen Karte noch irgendeine Handkarte gespielt werden kann"
+            const val DRAW_CARD_ACTION_ON_NOMINATED = "Karte vom Nachziehstapel gezogen, nachdem eine Auswahlkarte auf diesen Spieler gespielt wurde und keine spielbare Handkarte gefunden wurde"
+            const val NUMBER_CARD_PLAYED_ON_NOMINATED = "Zahlenkarte gespielt, die nach dem internen Evaluator am bestengeeignet war, nachdem eine Auswahlkarte auf diesen Spieler gespielt wurde"
+            const val DRAW_CARD_ACTION = "Karte vom Nachziehstapel gezogen, da der Zug begonnen hat und keine spielbare Handkarte gefunden wurde"
+            const val SAY_NOPE_ACTION = "Nope! gesagt, da weder die zuvor vom Nachziehstapel gezogen Karte noch irgendeine Handkarte gespielt werden kann"
+            const val NUMBER_CARD_PLAYED = "Zahlenkarte gespielt, die nach dem internen Evaluator am bestengeeignet war (abhängig von der Anzahl der Farben und den passenden Handkarten)"
+            const val NOMINATE_FLIPPED_ACTION = "Auswahlkarte auf den Spieler mit den wenigste Karten ausgespielt, da diese als erste Karte am Anfang des Spiels ausgelegt wurde"
+        }
     }
 
     init {
@@ -227,8 +239,10 @@ class Client1 : NopeEventListener {
                     kotlinClientInterface.nominateCard(
                         cards = emptyList(),
                         nominatedPlayer = nominatedPlayer,
-                        nominatedColor = gameLogic.determineNominatedColor(game, clientPlayer).takeIf { canChooseColor },
+                        nominatedColor = gameLogic.determineNominatedColor(game, clientPlayer)
+                            .takeIf { canChooseColor },
                         nominatedAmount = gameLogic.determineNominatedAmount(game, clientPlayer, nominatedPlayer),
+                        explanation = Explanation.NOMINATE_FLIPPED_ACTION
                     )
                 }
 
@@ -255,19 +269,21 @@ class Client1 : NopeEventListener {
                             }
                             // check whether this client can discard any set of cards
                             discardableNumberCardSet.isNotEmpty() -> {
-                                // discard first valid set
                                 // first card of the parameter list given to discardCard will be discarded at the top
-                                kotlinClientInterface.discardCard(discardableNumberCardSet)
+                                kotlinClientInterface.discardCard(
+                                    cards = discardableNumberCardSet,
+                                    explanation = Explanation.NUMBER_CARD_PLAYED
+                                )
                             }
 
                             else -> {
                                 // check whether this client took a card from the discard pile in the previous action
                                 if (game.state == GameState.CARD_DRAWN) {
                                     // this client drew a card in the previous action, say nope, because the client can not draw any card
-                                    kotlinClientInterface.sayNope()
+                                    kotlinClientInterface.sayNope(Explanation.SAY_NOPE_ACTION)
                                 } else {
                                     // this client did not draw a card last round and can not discard any set of cards
-                                    kotlinClientInterface.takeCard()
+                                    kotlinClientInterface.takeCard(Explanation.DRAW_CARD_ACTION)
                                 }
                             }
                         }
@@ -306,19 +322,22 @@ class Client1 : NopeEventListener {
         val discardableActionCards = gameLogic.getDiscardableActionCards(colors, clientPlayer.cards)
         if (discardableNumberCardSet.isNotEmpty()) {
             // discard matching number card for the condition of the nominate card
-            kotlinClientInterface.discardCard(discardableNumberCardSet)
+            kotlinClientInterface.discardCard(
+                cards = discardableNumberCardSet,
+                explanation = Explanation.NUMBER_CARD_PLAYED_ON_NOMINATED
+            )
             log.info("discarded number card after nominate")
-        } else if (discardableActionCards.isNotEmpty()){
+        } else if (discardableActionCards.isNotEmpty()) {
             // discard matching action card for the condition of the nominate card
             discardBestActionCard(discardableActionCards, game, clientPlayer)
             log.info("discarded action card after nominate")
         } else if (game.state == GameState.TURN_START) {
             // take card after nominate card
-            kotlinClientInterface.takeCard()
+            kotlinClientInterface.takeCard(explanation = Explanation.DRAW_CARD_ACTION_ON_NOMINATED)
             log.info("draw card after nominate")
         } else {
             // say nope after nominate card
-            kotlinClientInterface.sayNope()
+            kotlinClientInterface.sayNope(Explanation.SAY_NOPE_ACTION_ON_NOMINATED)
             log.info("said nope after nominate")
         }
     }
@@ -341,14 +360,18 @@ class Client1 : NopeEventListener {
                     cards = listOf(bestActionCard),
                     nominatedPlayer = nominatedPlayer,
                     nominatedColor = gameLogic.determineNominatedColor(game, clientPlayer).takeIf { canChooseColor },
-                    nominatedAmount = gameLogic.determineNominatedAmount(game, clientPlayer, nominatedPlayer)
+                    nominatedAmount = gameLogic.determineNominatedAmount(game, clientPlayer, nominatedPlayer),
+                    explanation = Explanation.DISCARD_NOMINATE_CARD
                 )
                 log.info(loginCredentials.username + " discarded action card: " + bestActionCard)
             }
 
             CardType.RESET, CardType.INVISIBLE -> {
                 // test call use other actions cards
-                kotlinClientInterface.discardCard(cards = listOf(bestActionCard))
+                kotlinClientInterface.discardCard(
+                    cards = listOf(bestActionCard),
+                    explanation = if (bestActionCard.type == CardType.RESET) Explanation.DISCARD_RESET_CARD else Explanation.DISCARD_INVISIBLE_CARD
+                )
                 log.info(loginCredentials.username + " discarded action card: " + bestActionCard)
             }
 
