@@ -206,7 +206,22 @@ internal class Client1GameLogic {
     }
 
     fun findBestActionCardToDiscard(discardableActionCards: List<Card>, clientPlayer: Player, game: Game): Card {
-        // TODO implement logic, that discards specific action card
-        return discardableActionCards.first()
+        val fallbackCard = discardableActionCards.first()
+        if (getNextPlayer(game, clientPlayer).cardAmount == 1) {
+            return discardableActionCards.firstOrNull { it.type == CardType.RESET } ?: fallbackCard
+        }
+        return fallbackCard
+    }
+
+    /**
+     * Returns the player, which plays after the client player
+     * */
+    private fun getNextPlayer(game: Game, clientPlayer: Player): Player {
+        val clientPlayerIndex = game.players.indexOfFirst { it.socketId == clientPlayer.socketId }
+        var nextPlayerIndex = clientPlayerIndex + 1
+        if (nextPlayerIndex >= game.players.size) {
+            nextPlayerIndex -= game.players.size
+        }
+        return game.players[nextPlayerIndex]
     }
 }
