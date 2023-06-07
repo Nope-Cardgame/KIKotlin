@@ -3,36 +3,29 @@ import KotlinClientInterface
 import LogConsoleFormatter
 import NopeEventListener
 import entity.*
-import entity.action.GameAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.util.logging.ConsoleHandler
 import java.util.logging.FileHandler
 import java.util.logging.Level
 import java.util.logging.Logger
 
 class Client3Orga(private val username: String, password: String, private val usernameToInvite: String? = null
                     ) : NopeEventListener {
-//    private val username: String
-//    private val password: String
     private val log: Logger
     private val logic = Client3Logic()
     private val kotlinClientInterface: KotlinClientInterface
     private var invitedUser: Boolean = false
+    private var currGameID: String =""
 
 
 
     init {
-//        println("Enter username here: ")
-//        username = readln()
-//        println("Enter password here: ")
-//        password = readln()
         log = Logger.getLogger("${javaClass.name}/$username")
         kotlinClientInterface = KotlinClientInterface(username, password, this)
 
         // setup logger
-        val consoleHandler = FileHandler("./log.txt")
+        val consoleHandler = FileHandler("./log_$username.txt")
         consoleHandler.level = Level.ALL
         consoleHandler.formatter = LogConsoleFormatter()
         log.addHandler(consoleHandler)
@@ -101,30 +94,55 @@ class Client3Orga(private val username: String, password: String, private val us
            when(game.state) {
 
                GameState.GAME_START -> {
-                   println("Game has started")
-                   log.fine("Game started at ${game.startTime} with the game ID: ${game.id}\n" +
-                           "Game started with: \n" +
-                           "Action Cards: ${!game.noActionCards}\n" +
-                           "Wild Cards: ${!game.noWildCards}\n" +
-                           "1 more Start card: ${game.oneMoreStartCards}\n" +
-                           "The starting card is ${game.initialTopCard}" +
-                           "Name | ranking | disqualified | sockedId")
-                   for (player in game.players) {
-                       log.fine("${player.username}, ${player.ranking}, ${player.disqualified}, ${player.socketId}")
-                   }
+//                   println("Game has started")
+//                   log.fine("Game started at ${game.startTime} with the game ID: ${game.id}\n" +
+//                           "Game started with: \n" +
+//                           "Action Cards: ${!game.noActionCards}\n" +
+//                           "Wild Cards: ${!game.noWildCards}\n" +
+//                           "1 more Start card: ${game.oneMoreStartCards}\n" +
+//                           "The starting card is ${game.initialTopCard}" +
+//                           "Name | ranking | disqualified | sockedId")
+//                   for (player in game.players) {
+//                       log.fine("${player.username}, ${player.ranking}, ${player.disqualified}, ${player.socketId}")
+//                   }
                }
                GameState.NOMINATE_FLIPPED -> { //game start with nominated flipped
                    val col = game.discardPile[0].colors[0]
-                   kotlinClientInterface.nominateCard(
-                       listOf(),
-                       nextPlayer,
-                       col,
-                       2,
-                       "Nominated played"
-                   )
+                   if (game.discardPile[0].colors.size > 1) {
+                       kotlinClientInterface.nominateCard(
+                           listOf(),
+                           nextPlayer,
+                           col,
+                           2,
+                           "Nominated played"
+                       )
+                   } else {
+                       kotlinClientInterface.nominateCard(
+                           listOf(),
+                           nextPlayer,
+                           null,
+                           2,
+                           "Nominated played"
+                       )
+                   }
+
                }
 
                GameState.TURN_START, GameState.CARD_DRAWN -> {
+                   if (currGameID != game.id) {
+                       currGameID = game.id
+                       println("Game has started")
+                       log.fine("Game started at ${game.startTime} with the game ID: ${game.id}\n" +
+                               "Game started with: \n" +
+                               "Action Cards: ${!game.noActionCards}\n" +
+                               "Wild Cards: ${!game.noWildCards}\n" +
+                               "1 more Start card: ${game.oneMoreStartCards}\n" +
+                               "The starting card is ${game.initialTopCard}" +
+                               "Name | ranking | disqualified | sockedId")
+                       for (player in game.players) {
+                           log.fine("${player.username}, ${player.ranking}, ${player.disqualified}, ${player.socketId}")
+                       }
+                   }
                    //checks if the first card is invisible-special to know on wich card to look at
                    val relevantBoardCard: Card = logic.checkInvisible(game.discardPile)
                    //checks if there is a discard able set in hand, matching color and amount
@@ -160,7 +178,7 @@ class Client3Orga(private val username: String, password: String, private val us
                }
                GameState.CANCELLED -> {println("Game invite has been canceled..")}
                GameState.GAME_END -> {
-                   log.fine("The game (${game.id}) ended at ${game.endTime}")
+                   log.fine("The game (${game.id}) ended at ${game.endTime}") //TODO
                }
            }
         }
@@ -205,7 +223,7 @@ class Client3Orga(private val username: String, password: String, private val us
                 }
 
                 CardType.INVISIBLE -> {
-                    for (color in relevantBoardCard.colors) {
+                    for (color in boardCol) {
                         if (card.colors[0] == color) {
                             discard = List<Card>(1) { card }
                             break
@@ -221,21 +239,29 @@ class Client3Orga(private val username: String, password: String, private val us
         //discards the chosen card('s)
         if (discard[0].type != CardType.NUMBER) {
             if (discard[0].type == CardType.NOMINATE) {
-                kotlinClientInterface.nominateCard(
-                    discard,
-                    nextPlayer,
-                    discard[0].colors[0],
-                    2,
-                    "random :)"
-                )
+                if(discard[0].colors.size > 1) {
+                    kotlinClientInterface.nominateCard(
+                        discard,
+                        nextPlayer,
+                        discard[0].colors[0],
+                        2,
+                        "random :)"
+                    )
+                } else {
+                    kotlinClientInterface.nominateCard(
+                        discard,
+                        nextPlayer,
+                        null,
+                        2,
+                        "random :)"
+                    )
+                }
+
             } else {
                 kotlinClientInterface.discardCard(discard,"i got a special card!")
             }
         } else {
-            //val remove = discard.sortedByDescending {it.colors.size}// TODO
-
             kotlinClientInterface.discardCard(discard,"first set to be found")
-
         }
     }
 
@@ -246,7 +272,12 @@ class Client3Orga(private val username: String, password: String, private val us
 
     override fun clientEliminated(playerEliminated: PlayerEliminated) {
         log.fine("clientEliminated received, reason:${playerEliminated.reason}, is disqualified: ${playerEliminated.disqualified}")
-        println("clientEliminated, reason:${playerEliminated.reason}, is disqualified: ${playerEliminated.disqualified}")
+        if (playerEliminated.disqualified) {
+            println("clientEliminated, reason:${playerEliminated.reason}, is disqualified: ${playerEliminated.disqualified}")
+        } else {
+            println("Hand is empty, game is lost")
+        }
+
     }
 
     override fun gameEnd(game: Game) {

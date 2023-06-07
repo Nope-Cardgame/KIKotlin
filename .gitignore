@@ -5,4 +5,4 @@
 ### Java ###
 *.class
 
-log.txt*
+log_*.txt
