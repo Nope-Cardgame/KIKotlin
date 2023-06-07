@@ -155,7 +155,7 @@ internal class Client1GameLogic {
      * */
     fun determineNominatedPlayer(game: Game, clientPlayer: Player): Player {
         // get player with the least card amount, which is either disqualified nor the client player
-        return game.players.filter { it.socketId != clientPlayer.socketId && !it.disqualified }.minBy { it.cards.size }
+        return game.players.filter { it.socketId != clientPlayer.socketId && !it.disqualified  && it.cardAmount != null }.minBy { it.cardAmount!! }
     }
 
     /**
