@@ -81,7 +81,6 @@ internal class Client1GameLogic {
             CardType.INVISIBLE -> {
                 if (currentDiscardPile.size == 1) {
                     // edge case invisible card as first card on the discard pile on game start
-                    // TODO is it possible to discard action cards with matching color in this edge case too?
                     findDiscardableNumberCardSet(currentDiscardPileCard.colors, 1, hand)
                 } else {
                     // nominate card should only be detected as first and single card on the discard pile
