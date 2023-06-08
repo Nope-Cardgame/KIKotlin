@@ -94,17 +94,6 @@ class Client3Orga(private val username: String, password: String, private val us
            when(game.state) {
 
                GameState.GAME_START -> {
-//                   println("Game has started")
-//                   log.fine("Game started at ${game.startTime} with the game ID: ${game.id}\n" +
-//                           "Game started with: \n" +
-//                           "Action Cards: ${!game.noActionCards}\n" +
-//                           "Wild Cards: ${!game.noWildCards}\n" +
-//                           "1 more Start card: ${game.oneMoreStartCards}\n" +
-//                           "The starting card is ${game.initialTopCard}" +
-//                           "Name | ranking | disqualified | sockedId")
-//                   for (player in game.players) {
-//                       log.fine("${player.username}, ${player.ranking}, ${player.disqualified}, ${player.socketId}")
-//                   }
                }
                GameState.NOMINATE_FLIPPED -> { //game start with nominated flipped
                    val col = game.discardPile[0].colors[0]
@@ -132,16 +121,17 @@ class Client3Orga(private val username: String, password: String, private val us
                    if (currGameID != game.id) {
                        currGameID = game.id
                        println("Game has started")
+                       log.fine("\n")
                        log.fine("Game started at ${game.startTime} with the game ID: ${game.id}\n" +
                                "Game started with: \n" +
                                "Action Cards: ${!game.noActionCards}\n" +
                                "Wild Cards: ${!game.noWildCards}\n" +
                                "1 more Start card: ${game.oneMoreStartCards}\n" +
-                               "The starting card is ${game.initialTopCard}" +
-                               "Name | ranking | disqualified | sockedId")
+                               "                                |   Name     | ranking       | disqualified         | sockedId")
                        for (player in game.players) {
-                           log.fine("${player.username}, ${player.ranking}, ${player.disqualified}, ${player.socketId}")
+                           log.fine("   ${player.username},         ${player.ranking},         ${player.disqualified},         ${player.socketId}")
                        }
+                       log.fine("\n")
                    }
                    //checks if the first card is invisible-special to know on wich card to look at
                    val relevantBoardCard: Card = logic.checkInvisible(game.discardPile)
@@ -150,7 +140,7 @@ class Client3Orga(private val username: String, password: String, private val us
 
                    //if no fitting set was found
                    if (discard.isEmpty()) {
-
+                       //if a card was drawn yet
                        if (game.state == GameState.CARD_DRAWN) {
                            //if the turn was a nominate
                            if (game.lastAction.type == GameActionType.NOMINATE) {
@@ -199,14 +189,14 @@ class Client3Orga(private val username: String, password: String, private val us
                             color = game.lastNominateColor
                         }
                         if (card.colors.size > 1) {
-                            if (card.colors[0] == color ||
-                                card.colors[1] == color ||
-                                card.colors[2] == color ||
-                                card.colors[3] == color
-                            ) {
+//                            if (card.colors[0] == color ||
+//                                card.colors[1] == color ||
+//                                card.colors[2] == color ||
+//                                card.colors[3] == color
+//                            ) {
                                 discard = List<Card>(1) { card }
                                 break
-                            }
+//                            }
                         } else {
                             if (card.colors[0] == col) {
                                 discard = List<Card>(1) { card }
@@ -214,7 +204,6 @@ class Client3Orga(private val username: String, password: String, private val us
                             }
                         }
                     }
-
                 }
 
                 CardType.RESET -> {
@@ -238,6 +227,7 @@ class Client3Orga(private val username: String, password: String, private val us
         }
         //discards the chosen card('s)
         if (discard[0].type != CardType.NUMBER) {
+            discard = discard.subList(0,1)
             if (discard[0].type == CardType.NOMINATE) {
                 if(discard[0].colors.size > 1) {
                     kotlinClientInterface.nominateCard(
@@ -261,6 +251,37 @@ class Client3Orga(private val username: String, password: String, private val us
                 kotlinClientInterface.discardCard(discard,"i got a special card!")
             }
         } else {
+//            //sort by value * colorAmount or colorrating if first part is equal //TODO
+//                if (discard.size > 1) {
+//                    if (discard[0].type == CardType.NUMBER) {
+//                        for (i in 0 until discard.size) {
+//                            var value1 = (discard[0].value!! * discard[0].colors.size)
+//                            if (discard[0].value == 3) {
+//                                if (nextPlayer.cardAmount != null && nextPlayer.cardAmount <= 7) {
+//                                    value1 -= 3
+//                                }
+//
+//                            }
+//                            var value2 = (discard[1].value!! * discard[1].colors.size)
+//                            if (discard[1].value == 3) {
+//                                if (nextPlayer.cardAmount != null && nextPlayer.cardAmount <= 7) {
+//                                    value2 -= 3
+//                                }
+//                            }
+//                            if (value1 < value2 ||
+//                                value1 == value2 && logic.getCardColorRating(discard[0], game) > logic.getCardColorRating(
+//                                    discard[1],
+//                                    game
+//                                )
+//                            ) {
+//                                val temp: Card = discard[0]
+//                                discard = discard.subList(1, discard.lastIndex)
+//                                discard.add(temp)
+//                                break
+//                            }
+//                        }
+//                    }
+//                }
             kotlinClientInterface.discardCard(discard,"first set to be found")
         }
     }

@@ -67,41 +67,8 @@ class Client3Logic {
             //if the counter is higher, the current color is taken to discard
 
             if (counter >= discardPileCard.value!!) {
-//                if (discardCards[0].type == CardType.NUMBER) {
-//                    discardCards.removeAll { it.type != CardType.NUMBER }
                     discardCards.sortByDescending { it.colors.size } //{ it.colors.size * it.value!! }
-//                }
-                //sort by value * colorAmount or colorrating if first part is equal //TODO
-//                if (discardCards.size > 1) {
-//                    if (discardCards[0].type == CardType.NUMBER) {
-//                        for (i in 0 until discardCards.size) {
-//                            var value1 = (discardCards[0].value!! * discardCards[0].colors.size)
-//                            if (discardCards[0].value == 3) {
-//                                if (nextPlayer.cardAmount != null && nextPlayer.cardAmount <= 7) {
-//                                    value1 -= 3
-//                                }
-//
-//                            }
-//                            var value2 = (discardCards[1].value!! * discardCards[1].colors.size)
-//                            if (discardCards[1].value == 3) {
-//                                if (nextPlayer.cardAmount != null && nextPlayer.cardAmount <= 7) {
-//                                    value2 -= 3
-//                                }
-//                            }
-//                            if (value1 < value2 ||
-//                                value1 == value2 && getCardColorRating(discardCards[0], game) > getCardColorRating(
-//                                    discardCards[1],
-//                                    game
-//                                )
-//                            ) {
-//                                val temp: Card = discardCards[0]
-//                                discardCards = discardCards.subList(1, discardCards.lastIndex)
-//                                discardCards.add(temp)
-//                                break
-//                            }
-//                        }
-//                    }
-//                }
+
                     println(discardPileCard.value)
                 return discardCards.subList(0, discardPileCard.value)
             }
