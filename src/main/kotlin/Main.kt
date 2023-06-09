@@ -24,10 +24,10 @@ fun main() {
         password = password3
     )
 
-    val client3Orga = Client3Orga(
+    val client3Orga_old = Client3Orga(
         username = username,
         password = password,
-        usernameToInvite = username3
+//        usernameToInvite = username3
     )
 
 }
