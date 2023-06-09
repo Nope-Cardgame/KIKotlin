@@ -76,6 +76,7 @@ class Client3Logic {
         return listOf<Card>()
     }
 
+    // checks the given cardpile and returns the first non invis card
     fun checkInvisible(discardPileCard: List<Card>): Card {
         for(card in discardPileCard) {
             if (card.type != CardType.INVISIBLE) {
@@ -85,7 +86,9 @@ class Client3Logic {
         return discardPileCard[0]
     }
 
-    private fun getRemainingCards(searchedColor: CardColor, game: Game) :Int {
+    // counts all known card's of the specific color
+    // returns the amount of found cards
+    fun getRemainingCards(searchedColor: CardColor, game: Game) :Int {
         var colorCards: Int = 0
         var allKnownCards = mutableListOf<Card>()
         allKnownCards = game.discardPile.toMutableList()

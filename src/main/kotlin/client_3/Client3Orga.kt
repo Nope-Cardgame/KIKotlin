@@ -230,10 +230,31 @@ class Client3Orga(private val username: String, password: String, private val us
             discard = discard.subList(0,1)
             if (discard[0].type == CardType.NOMINATE) {
                 if(discard[0].colors.size > 1) {
+                    var chosenColor: CardColor  = CardColor.RED
+                    var chosenColValue: Int = logic.getRemainingCards(CardColor.RED, game)
+
+                    var green = logic.getRemainingCards(CardColor.GREEN, game)
+                    if (green <= chosenColValue) {
+                        chosenColValue = green
+                        chosenColor = CardColor.GREEN
+                    }
+
+                    var blue = logic.getRemainingCards(CardColor.BLUE, game)
+                    if (blue <= chosenColValue) {
+                        chosenColValue = blue
+                        chosenColor = CardColor.BLUE
+                    }
+
+                    var yellow = logic.getRemainingCards(CardColor.YELLOW, game)
+                    if (yellow <= chosenColValue) {
+                        chosenColValue = yellow
+                        chosenColor = CardColor.YELLOW
+                    }
+
                     kotlinClientInterface.nominateCard(
                         discard,
                         nextPlayer,
-                        discard[0].colors[0],
+                        chosenColor,
                         2,
                         "random :)"
                     )
