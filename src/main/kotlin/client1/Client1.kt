@@ -31,8 +31,8 @@ class Client1 : NopeEventListener {
         val LOG_LEVEL: Level = Level.ALL
 
         object Config {
-            const val START_TOURNAMENT = true // determines, whether a tournament should be started instead of a single game
-            const val ASK_TO_INVITE_ON_CONNECT = false
+            const val START_TOURNAMENT = false // determines, whether a tournament should be started instead of a single game
+            const val ASK_TO_INVITE_ON_CONNECT = true
             const val ASK_TO_INVITE_AFTER_FINISHED = false
             const val ACCEPT_GAME_INVITATION_DEFAULT = true
             const val ACCEPT_TOURNAMENT_INVITATION_DEFAULT = true
@@ -40,7 +40,7 @@ class Client1 : NopeEventListener {
             /**
              * States whether the client should accept all invitations automatically without any user input
              * */
-            const val ACCEPT_INVITATION_AUTOMATICALLY = true // changed for debugging purpose, was false
+            const val ACCEPT_INVITATION_AUTOMATICALLY = false
 
             object DefaultGame {
                 const val ACTION_TIMEOUT = 10

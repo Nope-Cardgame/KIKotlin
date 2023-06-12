@@ -90,6 +90,10 @@ internal class Client1GameLogic {
         }
     }
 
+    /**
+     * Searches the given hand cards for the best cards matching the given colors list respecting the given amount
+     * and returns this list.
+     * */
     fun findDiscardableNumberCardSet(colors: List<CardColor>, amount: Int, hand: List<Card>): List<Card> {
         return colors.mapNotNull { requiredColor ->
             hand.filter { handCard ->
@@ -154,7 +158,8 @@ internal class Client1GameLogic {
      * */
     fun determineNominatedPlayer(game: Game, clientPlayer: Player): Player {
         // get player with the least card amount, which is either disqualified nor the client player
-        return game.players.filter { it.socketId != clientPlayer.socketId && !it.disqualified  && it.cardAmount != null }.minBy { it.cardAmount!! }
+        return game.players.filter { it.socketId != clientPlayer.socketId && !it.disqualified && it.cardAmount != null }
+            .minBy { it.cardAmount!! }
     }
 
     /**
@@ -204,9 +209,14 @@ internal class Client1GameLogic {
             discardPile
     }
 
+    /**
+     * Searches the best action card to discard and returns this card
+     * */
     fun findBestActionCardToDiscard(discardableActionCards: List<Card>, clientPlayer: Player, game: Game): Card {
         val fallbackCard = discardableActionCards.first()
         if (getNextPlayer(game, clientPlayer).cardAmount == 1) {
+            // if the following player has only one card left, search for a reset card to discard, because in this case
+            // the next player has to discard the card and the game ends probably afterwards
             return discardableActionCards.firstOrNull { it.type == CardType.RESET } ?: fallbackCard
         }
         return fallbackCard
