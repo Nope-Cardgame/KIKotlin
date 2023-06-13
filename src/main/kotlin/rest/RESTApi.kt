@@ -70,10 +70,12 @@ class RESTApi {
      * Starts a nope game
      * */
     suspend fun startGame(gameConfig: StartGamePostData): StartGamePostData {
-        return client.post(Constants.API.START_GAME){
+        val cont = client.post(Constants.API.START_GAME) {
             contentType(ContentType.Application.Json)
             setBody(gameConfig)
-        }.body()
+        }
+        println(cont.body<String>())
+         return cont.body()
     }
 
     /**
