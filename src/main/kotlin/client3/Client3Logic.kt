@@ -1,8 +1,14 @@
-package client_3
+package client3
 
+import client1.Client1GameLogic
 import entity.*
 import kotlin.math.min
 
+/**
+ * Client3-NopeClient
+ *
+ * @author [Jan Rasche](https://github.com/Muquinbla)
+ */
 class Client3Logic {
 
     /**

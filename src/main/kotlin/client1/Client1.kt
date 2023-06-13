@@ -14,6 +14,7 @@ import java.util.logging.Logger
 
 /**
  * Client1-NopeClient
+ *
  * This class lets the user control the client using the console and reacts to server events by delegating logic to the
  * [Client1GameLogic] and obtaining information about the nope game using the kotlin client api class
  * [KotlinClientInterface].
@@ -97,7 +98,7 @@ class Client1 : NopeEventListener {
      * Sets up the logger
      * */
     private fun setupLogger() {
-        val consoleHandler = FileHandler("./log.txt")
+        val consoleHandler = FileHandler("./log_jonas.txt")
         consoleHandler.level = LOG_LEVEL
         consoleHandler.formatter = LogConsoleFormatter()
         log.addHandler(consoleHandler)

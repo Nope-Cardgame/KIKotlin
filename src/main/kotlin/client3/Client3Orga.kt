@@ -1,4 +1,4 @@
-package client_3
+package client3
 import KotlinClientInterface
 import LogConsoleFormatter
 import NopeEventListener
