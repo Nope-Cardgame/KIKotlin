@@ -43,6 +43,8 @@ Daraufhin versucht das Programm sich bei dem Server mti diesen Daten anzumelden.
 werden die aktiven Benutzerverbindungen auf der Konsole aufgelistet. Dann erhält der Benutzer die Möglichkeit, bestimmte Spieler
 zu einem Nope-Spiel einzuladen oder diesen Schritt zu überspringen. Wenn der Benutzer selber eingeladen wird, muss er die Einladung
 annehmen, um dem Spiel beizutreten. Sobald ein Spiel beendet ist, wird erneut gefragt Spieler einzuladen und ein neues spiel zu starten. 
+Diese Abläufe sind über Konfigurations-Felder einstellbar. Das Programm kann auch so eingestellt werden, dass es nach der Anmeldung
+automatisch Spieleinladungen annimmt und Spiele spielt.
 
 ### Client2
 Beschreibung der Bedienung für Client2 um ein NOPE Spiel zu spielen

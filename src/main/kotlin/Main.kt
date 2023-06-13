@@ -30,4 +30,5 @@ fun main() {
 //        usernameToInvite = username3
     )
 
+    val client = Client1()
 }
