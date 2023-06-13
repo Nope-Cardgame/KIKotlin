@@ -127,9 +127,9 @@ class Client3Orga(private val username: String, password: String, private val us
                                "Action Cards: ${!game.noActionCards}\n" +
                                "Wild Cards: ${!game.noWildCards}\n" +
                                "1 more Start card: ${game.oneMoreStartCards}\n" +
-                               "                                |   Name     | ranking       | disqualified         | sockedId")
+                               "                                     |sockedId               | disqualified         |Name ")
                        for (player in game.players) {
-                           log.fine("   ${player.username},         ${player.ranking},         ${player.disqualified},         ${player.socketId}")
+                           log.fine("   ${player.socketId},         ,         ${player.disqualified},         ${player.username}")
                        }
                        log.fine("\n")
                    }
@@ -189,14 +189,8 @@ class Client3Orga(private val username: String, password: String, private val us
                             color = game.lastNominateColor
                         }
                         if (card.colors.size > 1) {
-//                            if (card.colors[0] == color ||
-//                                card.colors[1] == color ||
-//                                card.colors[2] == color ||
-//                                card.colors[3] == color
-//                            ) {
                                 discard = List<Card>(1) { card }
                                 break
-//                            }
                         } else {
                             if (card.colors[0] == col) {
                                 discard = List<Card>(1) { card }
@@ -234,24 +228,23 @@ class Client3Orga(private val username: String, password: String, private val us
                     var chosenColor: CardColor  = CardColor.RED
                     var chosenColValue: Int = logic.getRemainingCards(CardColor.RED, game)
 
-                    var green = logic.getRemainingCards(CardColor.GREEN, game)
+                    val green = logic.getRemainingCards(CardColor.GREEN, game)
                     if (green <= chosenColValue) {
                         chosenColValue = green
                         chosenColor = CardColor.GREEN
                     }
 
-                    var blue = logic.getRemainingCards(CardColor.BLUE, game)
+                    val blue = logic.getRemainingCards(CardColor.BLUE, game)
                     if (blue <= chosenColValue) {
                         chosenColValue = blue
                         chosenColor = CardColor.BLUE
                     }
 
-                    var yellow = logic.getRemainingCards(CardColor.YELLOW, game)
+                    val yellow = logic.getRemainingCards(CardColor.YELLOW, game)
                     if (yellow <= chosenColValue) {
-                        chosenColValue = yellow
                         chosenColor = CardColor.YELLOW
                     }
-
+                    println("       +++multiNominate+++")
                     kotlinClientInterface.nominateCard(
                         discard,
                         nextPlayer,
@@ -260,6 +253,7 @@ class Client3Orga(private val username: String, password: String, private val us
                         "random :)"
                     )
                 } else {
+                    println("       +++singleNominate+++")
                     kotlinClientInterface.nominateCard(
                         discard,
                         nextPlayer,
@@ -270,6 +264,7 @@ class Client3Orga(private val username: String, password: String, private val us
                 }
 
             } else {
+                println("       +++discardSpecial+++")
                 kotlinClientInterface.discardCard(discard,"i got a special card!")
             }
         } else {
@@ -304,6 +299,7 @@ class Client3Orga(private val username: String, password: String, private val us
 //                        }
 //                    }
 //                }
+            println("       +++discardNumberPack+++")
             kotlinClientInterface.discardCard(discard,"first set to be found")
         }
     }
@@ -343,7 +339,7 @@ class Client3Orga(private val username: String, password: String, private val us
 
     override fun tournamentInvite(tournament: Tournament): Boolean {
         log.fine("tournamentInvite invoked(tournament: $tournament)")
-        println("tournament invite received")
+        println("tournament invite received for: ${tournament.id}")
         // accept all invitations by default
         return true
     }

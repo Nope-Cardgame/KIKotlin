@@ -19,14 +19,14 @@ fun main() {
 //        usernameToInvite = username2
 //    )
 
-    val Client3Orga = Client3Orga(
-        username = username3,
-        password = password3
-    )
+//    val Client3Orga = Client3Orga(
+//        username = username3,
+//        password = password3
+//    )
 
     val client3Orga_old = Client3Orga(
-        username = username,
-        password = password,
+        username = username3,
+        password = password3,
 //        usernameToInvite = username3
     )
 
