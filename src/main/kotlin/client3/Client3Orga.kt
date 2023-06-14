@@ -184,7 +184,7 @@ class Client3Orga(private val username: String, password: String, private val us
                }
                GameState.CANCELLED -> {println("Game invite has been canceled..")}
                GameState.GAME_END -> {
-                   log.fine("The game (${game.id}) ended at ${game.endTime}") //TODO
+                   log.fine("The game (${game.id}) ended at ${game.endTime}")
                }
            }
         }
