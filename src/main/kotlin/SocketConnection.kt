@@ -157,18 +157,19 @@ class SocketConnection(
     override fun nominateCard(
         cards: List<Card>,
         nominatedPlayer: Player,
-        nominatedColor: CardColor,
+        nominatedColor: CardColor?,
         nominatedAmount: Int,
         explanation: String
     ) {
         emitData(
             Constants.WebSocket.EVENTS.PLAY_ACTION,
+
             NominateCardAction(
                 explanation = explanation,
                 cards = cards,
                 nominatedPlayer = nominatedPlayer,
                 nominatedAmount = nominatedAmount,
-                nominatedColor = nominatedColor
+                nominatedColor = nominatedColor,
             )
         )
     }
