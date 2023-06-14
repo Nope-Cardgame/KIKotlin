@@ -9,7 +9,18 @@ import kotlinx.coroutines.runBlocking
 import java.util.logging.FileHandler
 import java.util.logging.Level
 import java.util.logging.Logger
-
+/**
+ * Client3Orga-NopeClient
+ *
+ * In this class the socket.io calls get answered, the Nope game structure is build
+ * and the logic is outsourced to [Client3Logic].
+ *
+ * @param username: username of this client
+ * @param password: password of this client
+ * @param usernameToInvite: username of the client to invite, used for test-runs
+ *
+ * @author [Jan Rasche](https://github.com/Muquinbla)
+ */
 class Client3Orga(private val username: String, password: String, private val usernameToInvite: String? = null
                     ) : NopeEventListener {
     private val log: Logger
@@ -19,7 +30,9 @@ class Client3Orga(private val username: String, password: String, private val us
     private var currGameID: String =""
 
 
-
+/**
+ * initiates the logger and loggs the client onto the server
+* */
     init {
         log = Logger.getLogger("${javaClass.name}/$username")
         kotlinClientInterface = KotlinClientInterface(username, password, this)
@@ -33,6 +46,9 @@ class Client3Orga(private val username: String, password: String, private val us
         log.useParentHandlers = false
     }
 
+    /**
+     * funktion to test a game with 2 (of this) clients
+     * */
     private suspend fun startGame() {
         val userConnections = kotlinClientInterface.getUserConnections()
         // test game with kotlin client players only
@@ -52,7 +68,7 @@ class Client3Orga(private val username: String, password: String, private val us
     }
 
 
-
+    /**** Overridden Websocket Events ****/
     override fun socketConnected() {
         log.fine("socketConnected received")
         println("$username connected")
@@ -87,7 +103,6 @@ class Client3Orga(private val username: String, password: String, private val us
 
     override fun gameStateUpdate(game: Game) {
         val nextPlayer: Player = game.players.first { it.socketId != game.currentPlayer.socketId && (!it.disqualified)}
-        //log.fine("gameStateUpdate received")
         //check if its this clients turn
         if (game.currentPlayer.username == username) {
 
@@ -118,6 +133,7 @@ class Client3Orga(private val username: String, password: String, private val us
                }
 
                GameState.TURN_START, GameState.CARD_DRAWN -> {
+                   // log print at game start, with current game info
                    if (currGameID != game.id) {
                        currGameID = game.id
                        println("Game has started")
@@ -133,7 +149,7 @@ class Client3Orga(private val username: String, password: String, private val us
                        }
                        log.fine("\n")
                    }
-                   //checks if the first card is invisible-special to know on wich card to look at
+                   //checks if the first card is invisible-special to know at wich card to look at
                    val relevantBoardCard: Card = logic.checkInvisible(game.discardPile)
                    //checks if there is a discard able set in hand, matching color and amount
                    val discard: List<Card> = logic.checkForDiscard(game.currentPlayer.cards,relevantBoardCard, game)
@@ -174,14 +190,24 @@ class Client3Orga(private val username: String, password: String, private val us
         }
     }
 
+
+    /**
+     * Manages the discard process and checks for special cards in hand and if they are playable (uses last special card)
+     * @param game: current played game
+     * @param disc: list of numberCards to discard, with fitting color
+     * @param relevantBoardCard: the uppermost relevant card (ignoring invisible)
+     * @param nextPlayer: the player who is next up in the game and not qualified
+     * */
     private fun discardChosenOnes(game: Game, disc: List<Card>, relevantBoardCard: Card, nextPlayer: Player) {
         var discard: List<Card> = disc
         val boardCol = if (relevantBoardCard.type == CardType.NOMINATE && relevantBoardCard.colors.size > 1) {listOf(game.lastNominateColor)} else {relevantBoardCard.colors}
-        //checks for special cards in hand and if they are playable (uses last special card)
+
         for(card in game.currentPlayer.cards) {
             when (card.type) {
+                //do nothing with number cards
                 CardType.NUMBER -> {
                 }
+                // nominate card found
                 CardType.NOMINATE -> {
                     for (col in boardCol) {
                         var color: CardColor = col
@@ -199,12 +225,12 @@ class Client3Orga(private val username: String, password: String, private val us
                         }
                     }
                 }
-
+                // reset card found
                 CardType.RESET -> {
                     discard = List<Card>(1) { card }
                     break
                 }
-
+                // invisible card found
                 CardType.INVISIBLE -> {
                     for (color in boardCol) {
                         if (card.colors[0] == color) {
@@ -221,6 +247,7 @@ class Client3Orga(private val username: String, password: String, private val us
         }
         //discards the chosen card('s)
         if (discard[0].type != CardType.NUMBER) {
+            // makes sure only special card is discarded
             discard = discard.subList(0,1)
             if (discard[0].type == CardType.NOMINATE) {
                 if(discard[0].colors.size > 1) {
@@ -268,37 +295,6 @@ class Client3Orga(private val username: String, password: String, private val us
                 kotlinClientInterface.discardCard(discard,"i got a special card!")
             }
         } else {
-//            //sort by value * colorAmount or colorrating if first part is equal //TODO
-//                if (discard.size > 1) {
-//                    if (discard[0].type == CardType.NUMBER) {
-//                        for (i in 0 until discard.size) {
-//                            var value1 = (discard[0].value!! * discard[0].colors.size)
-//                            if (discard[0].value == 3) {
-//                                if (nextPlayer.cardAmount != null && nextPlayer.cardAmount <= 7) {
-//                                    value1 -= 3
-//                                }
-//
-//                            }
-//                            var value2 = (discard[1].value!! * discard[1].colors.size)
-//                            if (discard[1].value == 3) {
-//                                if (nextPlayer.cardAmount != null && nextPlayer.cardAmount <= 7) {
-//                                    value2 -= 3
-//                                }
-//                            }
-//                            if (value1 < value2 ||
-//                                value1 == value2 && logic.getCardColorRating(discard[0], game) > logic.getCardColorRating(
-//                                    discard[1],
-//                                    game
-//                                )
-//                            ) {
-//                                val temp: Card = discard[0]
-//                                discard = discard.subList(1, discard.lastIndex)
-//                                discard.add(temp)
-//                                break
-//                            }
-//                        }
-//                    }
-//                }
             println("       +++discardNumberPack+++")
             kotlinClientInterface.discardCard(discard,"first set to be found")
         }

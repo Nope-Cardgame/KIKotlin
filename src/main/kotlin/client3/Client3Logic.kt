@@ -1,11 +1,12 @@
 package client3
 
-import client1.Client1GameLogic
 import entity.*
 import kotlin.math.min
 
 /**
  * Client3-NopeClient
+ *
+ * Contains the methods on what to do at a turn and a few helping methods
  *
  * @author [Jan Rasche](https://github.com/Muquinbla)
  */
@@ -71,10 +72,8 @@ class Client3Logic {
                 }
             }
             //if the counter is higher, the current color is taken to discard
-
             if (counter >= discardPileCard.value!!) {
-                    discardCards.sortByDescending { it.colors.size } //{ it.colors.size * it.value!! }
-
+                    discardCards.sortByDescending { it.colors.size }
                     println(discardPileCard.value)
                 return discardCards.subList(0, discardPileCard.value)
             }
@@ -82,18 +81,24 @@ class Client3Logic {
         return listOf<Card>()
     }
 
-    // checks the given cardpile and returns the first non invis card
+    /**
+     * checks the given card pile and returns the
+     * @param discardPileCard card list to control
+     * @return first non-invisible card, otherwise first card
+     */
     fun checkInvisible(discardPileCard: List<Card>): Card {
         for(card in discardPileCard) {
             if (card.type != CardType.INVISIBLE) {
                 return card
             }
         }
+        // returns first card if there are only invisible cards1
         return discardPileCard[0]
     }
 
-    // counts all known card's of the specific color
-    // returns the amount of found cards
+    /** counts all known card's (own hand and discardpile) of the specific color
+     *  @return the amount of found cards
+     * */
     fun getRemainingCards(searchedColor: CardColor, game: Game) :Int {
         var colorCards: Int = 0
         var allKnownCards = mutableListOf<Card>()
