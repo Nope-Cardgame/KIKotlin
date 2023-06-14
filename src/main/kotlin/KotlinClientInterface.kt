@@ -97,7 +97,7 @@ class KotlinClientInterface(
         nominatedColor: CardColor?,
         nominatedAmount: Int,
         explanation: String
-    ) = socketConnection.nominateCard(cards, nominatedPlayer, nominatedColor, nominatedAmount, explanation)//TODO
+    ) = socketConnection.nominateCard(cards, nominatedPlayer, nominatedColor, nominatedAmount, explanation)
 
     override fun sayNope(explanation: String) = socketConnection.sayNope(explanation)
 
